@@ -142,6 +142,13 @@ figure svg { display: block; width: 100%; max-width: 780px; height: auto; min-wi
 .field label { font-size: 13px; color: var(--muted); }
 .field input, .field select { font: 400 15px var(--f-mono); color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; width: 100%; min-width: 0; }
 .field input:focus, .field select:focus { border-color: var(--cold); }
+.field label { display: inline; }
+.help-i { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--muted); color: var(--muted); background: transparent; font: 600 10px/1 var(--f-mono); cursor: pointer; padding: 0; margin-left: 5px; vertical-align: middle; }
+.help-i:hover, .help-i:focus-visible { border-color: var(--cold); color: var(--cold); }
+.help-i[aria-expanded="true"] { background: var(--cold); border-color: var(--cold); color: #fff; }
+:root[data-theme="dark"] .help-i[aria-expanded="true"] { color: #06181C; }
+.help-pop { position: absolute; z-index: 60; max-width: min(280px, calc(100vw - 32px)); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 10px 12px; font-size: 13px; line-height: 1.45; color: var(--ink); display: none; }
+.help-pop.open { display: block; }
 .rows { display: grid; gap: 8px; margin-bottom: 12px; }
 .row { display: grid; grid-template-columns: minmax(120px, 1.6fr) minmax(80px, 1fr) minmax(70px, 0.8fr) minmax(70px, 0.8fr); gap: 8px; align-items: center; }
 .row.head { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
@@ -311,7 +318,7 @@ footer p { max-width: 80ch; }
 
     <h4>3. Envelope by orientation</h4>
     <p class="hint">Azimuth is measured clockwise from north: N = 0, E = 90, S = 180, W = 270. Enter any angle for a rotated house. Gross wall area includes the windows and doors on that facade.</p>
-    <div class="rows" id="L-env"><div class="row r5 head"><span>Facade</span><span>Azimuth (° from north)</span><span>Gross wall area</span><span>Windows</span><span>Doors</span></div><div class="row r5"><span class="lab" id="L-n1"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az1" type="number" inputmode="decimal" data-q="deg" data-c="0" aria-label="Facade 1 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g1" type="number" inputmode="decimal" data-q="area" data-c="30" aria-label="Facade 1 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w1" type="number" inputmode="decimal" data-q="area" data-c="3.0" aria-label="Facade 1 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d1" type="number" inputmode="decimal" data-q="area" data-c="1.9" aria-label="Facade 1 door area"></label></div><div class="row r5"><span class="lab" id="L-n2"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az2" type="number" inputmode="decimal" data-q="deg" data-c="90" aria-label="Facade 2 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g2" type="number" inputmode="decimal" data-q="area" data-c="31" aria-label="Facade 2 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w2" type="number" inputmode="decimal" data-q="area" data-c="4.0" aria-label="Facade 2 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d2" type="number" inputmode="decimal" data-q="area" data-c="0" aria-label="Facade 2 door area"></label></div><div class="row r5"><span class="lab" id="L-n3"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az3" type="number" inputmode="decimal" data-q="deg" data-c="180" aria-label="Facade 3 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g3" type="number" inputmode="decimal" data-q="area" data-c="32" aria-label="Facade 3 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w3" type="number" inputmode="decimal" data-q="area" data-c="7.0" aria-label="Facade 3 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d3" type="number" inputmode="decimal" data-q="area" data-c="0" aria-label="Facade 3 door area"></label></div><div class="row r5"><span class="lab" id="L-n4"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az4" type="number" inputmode="decimal" data-q="deg" data-c="270" aria-label="Facade 4 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g4" type="number" inputmode="decimal" data-q="area" data-c="31" aria-label="Facade 4 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w4" type="number" inputmode="decimal" data-q="area" data-c="4.6" aria-label="Facade 4 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d4" type="number" inputmode="decimal" data-q="area" data-c="1.8" aria-label="Facade 4 door area"></label></div></div>
+    <div class="rows" id="L-env"><div class="row r5 head"><span>Facade</span><span data-help="Compass direction the facade faces, in degrees clockwise from north (N=0, E=90, S=180, W=270). Sets the sun angle used for that wall&#39;s solar gain.">Azimuth (° from north)</span><span data-help="Total wall area on that facade, including any windows and doors on it.">Gross wall area</span><span data-help="Total window area on that facade &mdash; used for both window conduction (U-factor) and solar heat gain (SHGC).">Windows</span><span data-help="Total door area on that facade, calculated at the door insulation value rather than the wall or window value.">Doors</span></div><div class="row r5"><span class="lab" id="L-n1"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az1" type="number" inputmode="decimal" data-q="deg" data-c="0" aria-label="Facade 1 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g1" type="number" inputmode="decimal" data-q="area" data-c="30" aria-label="Facade 1 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w1" type="number" inputmode="decimal" data-q="area" data-c="3.0" aria-label="Facade 1 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d1" type="number" inputmode="decimal" data-q="area" data-c="1.9" aria-label="Facade 1 door area"></label></div><div class="row r5"><span class="lab" id="L-n2"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az2" type="number" inputmode="decimal" data-q="deg" data-c="90" aria-label="Facade 2 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g2" type="number" inputmode="decimal" data-q="area" data-c="31" aria-label="Facade 2 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w2" type="number" inputmode="decimal" data-q="area" data-c="4.0" aria-label="Facade 2 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d2" type="number" inputmode="decimal" data-q="area" data-c="0" aria-label="Facade 2 door area"></label></div><div class="row r5"><span class="lab" id="L-n3"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az3" type="number" inputmode="decimal" data-q="deg" data-c="180" aria-label="Facade 3 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g3" type="number" inputmode="decimal" data-q="area" data-c="32" aria-label="Facade 3 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w3" type="number" inputmode="decimal" data-q="area" data-c="7.0" aria-label="Facade 3 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d3" type="number" inputmode="decimal" data-q="area" data-c="0" aria-label="Facade 3 door area"></label></div><div class="row r5"><span class="lab" id="L-n4"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az4" type="number" inputmode="decimal" data-q="deg" data-c="270" aria-label="Facade 4 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g4" type="number" inputmode="decimal" data-q="area" data-c="31" aria-label="Facade 4 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w4" type="number" inputmode="decimal" data-q="area" data-c="4.6" aria-label="Facade 4 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d4" type="number" inputmode="decimal" data-q="area" data-c="1.8" aria-label="Facade 4 door area"></label></div></div>
     <div class="grid"><div class="field"><label for="L-rw">Wall insulation (<span class="u" data-q="rsi"></span>)</label><input id="L-rw" type="number" inputmode="decimal" step="0.1" data-q="rsi" data-c="3.522"></div><div class="field"><label for="L-aw">Wall colour (solar absorptance)</label><select id="L-aw"><option value="0.45">Light (0.45)</option><option value="0.675" selected>Medium (0.675)</option><option value="0.9">Dark (0.90)</option></select></div><div class="field"><label for="L-uwin">Window U-factor (<span class="u" data-q="u"></span>)</label><input id="L-uwin" type="number" inputmode="decimal" step="0.05" data-q="u" data-c="1.8"></div><div class="field"><label for="L-shgc">Window SHGC</label><input id="L-shgc" type="number" inputmode="decimal" step="0.01" value="0.4"></div><div class="field"><label for="L-rd">Door insulation (<span class="u" data-q="rsi"></span>)</label><input id="L-rd" type="number" inputmode="decimal" step="0.1" data-q="rsi" data-c="0.88"></div><div class="field"><label for="L-ar">Roof / ceiling area (<span class="u" data-q="area"></span>)</label><input id="L-ar" type="number" inputmode="decimal" data-q="area" data-c="93"></div><div class="field"><label for="L-rr">Roof / ceiling insulation (<span class="u" data-q="rsi"></span>)</label><input id="L-rr" type="number" inputmode="decimal" step="0.1" data-q="rsi" data-c="8.8"></div><div class="field"><label for="L-ar_abs">Roof colour (solar absorptance)</label><select id="L-ar_abs"><option value="0.45">Light (0.45)</option><option value="0.675">Medium (0.675)</option><option value="0.9" selected>Dark (0.90)</option></select></div><div class="field"><label for="L-af2">Foundation and floor area (<span class="u" data-q="area"></span>)</label><input id="L-af2" type="number" inputmode="decimal" data-q="area" data-c="93"></div><div class="field"><label for="L-rf">Foundation and floor, effective (<span class="u" data-q="rsi"></span>)</label><input id="L-rf" type="number" inputmode="decimal" step="0.1" data-q="rsi" data-c="3.522"></div></div>
 
     <h4>4. Air tightness and ventilation</h4>
@@ -402,7 +409,7 @@ footer p { max-width: 80ch; }
     </div>
     <div class="actions"><button type="button" class="btn" id="b-use">Use the heating load from the calculator above</button></div>
     <div class="rows">
-      <div class="row r3 head"><span>Point</span><span>Outdoor temp (<span class="u" data-q="temp"></span>)</span><span>Max capacity (<span class="u" data-q="pow"></span>)</span></div>
+      <div class="row r3 head"><span>Point</span><span data-help="One outdoor temperature point from the unit&#39;s extended (low-ambient) performance table.">Outdoor temp (<span class="u" data-q="temp"></span>)</span><span data-help="The heat pump&#39;s maximum available heating capacity at that outdoor temperature, from the manufacturer&#39;s performance table.">Max capacity (<span class="u" data-q="pow"></span>)</span></div>
       <div class="row r3"><span class="lab">Point 1</span><label class="cell"><small>Outdoor temp (<span class="u" data-q="temp"></span>)</small><input data-q="temp" data-c="8" id="b-t1" type="number" inputmode="decimal" aria-label="Point 1 temperature"></label><label class="cell"><small>Max capacity (<span class="u" data-q="pow"></span>)</small><input data-q="pow" data-c="10550.6" id="b-c1" type="number" inputmode="decimal" aria-label="Point 1 capacity"></label></div>
       <div class="row r3"><span class="lab">Point 2</span><label class="cell"><small>Outdoor temp (<span class="u" data-q="temp"></span>)</small><input data-q="temp" data-c="-8" id="b-t2" type="number" inputmode="decimal" aria-label="Point 2 temperature"></label><label class="cell"><small>Max capacity (<span class="u" data-q="pow"></span>)</small><input data-q="pow" data-c="8792.2" id="b-c2" type="number" inputmode="decimal" aria-label="Point 2 capacity"></label></div>
       <div class="row r3"><span class="lab">Point 3</span><label class="cell"><small>Outdoor temp (<span class="u" data-q="temp"></span>)</small><input data-q="temp" data-c="-15" id="b-t3" type="number" inputmode="decimal" aria-label="Point 3 temperature"></label><label class="cell"><small>Max capacity (<span class="u" data-q="pow"></span>)</small><input data-q="pow" data-c="7619.8" id="b-c3" type="number" inputmode="decimal" aria-label="Point 3 capacity"></label></div>
@@ -428,6 +435,7 @@ footer p { max-width: 80ch; }
     </div>
     <div class="results" id="x-out" aria-live="polite"></div>
     <p class="note">Energy per unit: oil about 38.2 MJ/L, propane about 25.3 MJ/L, natural gas about 37.7 MJ/m&sup3;. Confirm current values and prices before quoting.</p>
+    <p class="note">Selecting natural gas fills in Liberty Utilities&#39; New Brunswick residential rate &mdash; delivery plus gas supply, about $0.84/m&sup3;, effective September 1, 2026, excluding the $22.50/month customer charge. The supply portion is market-based and changes monthly, so confirm the current rate at naturalgasnb.com before quoting.</p>
   </div>
 </section>
 
@@ -1098,7 +1106,15 @@ function calcEff() {
   }
   $('x-out').innerHTML = html;
 }
-$('x-fuel').addEventListener('change', function () { var val = parseFloat($('x-fuel').value); if (val !== 1) $('x-kwh').value = val; calcEff(); });
+var FUEL_PRICE_DEFAULT = { '10.5': 0.84 }; /* natural gas, NB (Liberty Utilities): delivery + supply, $/m3, effective Sep 1 2026 */
+$('x-fuel').addEventListener('change', function () {
+  var raw = $('x-fuel').value, val = parseFloat(raw);
+  if (val !== 1) {
+    $('x-kwh').value = val;
+    if (FUEL_PRICE_DEFAULT.hasOwnProperty(raw)) $('x-fp').value = FUEL_PRICE_DEFAULT[raw];
+  }
+  calcEff();
+});
 
 /* ---------- ducts ---------- */
 function calcDuct1() {
@@ -1373,6 +1389,200 @@ $('f-send').addEventListener('click', function () {
   if (avail > 0 && tel > 0) { setC('s-fr', avail / tel); calcSizer(); }
 });
 calcAll();
+
+/* =====================================================================
+   Field alignment: keep input boxes lined up across a row even when
+   neighbouring labels wrap to a different number of lines.
+   ===================================================================== */
+var _alignT = null;
+function equalizeFieldLabels() {
+  [].forEach.call(document.querySelectorAll('.grid'), function (grid) {
+    var fields = [].filter.call(grid.children, function (c) {
+      return c.classList.contains('field') && c.offsetParent !== null;
+    });
+    fields.forEach(function (f) { var lab = f.querySelector('label'); if (lab) lab.style.minHeight = ''; });
+    var groups = {};
+    fields.forEach(function (f) { (groups[f.offsetTop] = groups[f.offsetTop] || []).push(f); });
+    Object.keys(groups).forEach(function (top) {
+      var g = groups[top];
+      if (g.length < 2) return;
+      var max = 0;
+      g.forEach(function (f) { var lab = f.querySelector('label'); if (lab) max = Math.max(max, lab.scrollHeight); });
+      g.forEach(function (f) { var lab = f.querySelector('label'); if (lab) lab.style.minHeight = max + 'px'; });
+    });
+  });
+}
+function scheduleAlign() { clearTimeout(_alignT); _alignT = setTimeout(equalizeFieldLabels, 30); }
+window.addEventListener('load', scheduleAlign);
+window.addEventListener('resize', scheduleAlign);
+if ('MutationObserver' in window) {
+  new MutationObserver(scheduleAlign).observe(document.body, { attributes: true, attributeFilter: ['hidden'], subtree: true });
+}
+scheduleAlign();
+
+/* =====================================================================
+   Per-field help: a small (i) button beside a label or column header
+   that shows a plain-language explanation on click.
+   ===================================================================== */
+var HELP = {
+  'q-area': 'Total conditioned floor area of the house (heated and/or cooled space).',
+  'q-mode': 'Whether this estimate is for cooling, heating, or both — controls which results are shown below.',
+  'q-tight': 'Rough envelope quality. Fills in a typical cooling and heating factor for that class of house; either factor can still be overwritten by hand.',
+  'q-cpk': 'Airflow to move per ton of nominal capacity. About 350–450 CFM/ton is typical: the low end for humid climates needing extra dehumidification, the high end for dry climates.',
+  'q-coolf': 'Rule-of-thumb cooling load per square foot of floor area. Higher for more glazing, more sun exposure, or leakier construction.',
+  'q-heatf': 'Rule-of-thumb heating load per square foot of floor area. Higher for colder climates or leakier, less insulated construction.',
+  'q-aux': 'Whether the system includes a supplemental/backup heat source for outdoor temperatures below the heat pump’s balance point.',
+  'q-auxtype': 'Electric resistance (a simple heat strip) or a fossil-fuel furnace paired with the heat pump in a dual-fuel setup.',
+  'q-auxpct': 'What share of the full design heating load the backup should cover on its own, from 0% (no redundancy) to 100% (fully redundant).',
+  'q-afue': 'Furnace’s Annual Fuel Utilization Efficiency — the fraction of fuel energy delivered as useful heat. Used to size the furnace’s input rating from the output needed.',
+  'L-two': '99.6% (or 99%) winter design dry-bulb temperature from ASHRAE climatic data for the site — the outdoor temperature the heating system is sized to.',
+  'L-twi': 'Winter indoor thermostat setpoint used for the heating load calculation.',
+  'L-tso': '0.4% (or 1%) summer design dry-bulb temperature from ASHRAE climatic data — the outdoor temperature the cooling system is sized to.',
+  'L-twb': 'Mean coincident wet-bulb temperature at the summer design dry-bulb — drives the latent (humidity) cooling load.',
+  'L-dr': 'Mean daily temperature range for the design month — how far the outdoor temperature swings from its daily low to high, used to shape the design-day profile.',
+  'L-tsi': 'Summer indoor thermostat setpoint used for the cooling load calculation.',
+  'L-rh': 'Target indoor relative humidity in summer — drives the latent cooling load from ventilation and occupants.',
+  'L-mon': 'Design month for the cooling calculation — sets the sun angle and clear-sky solar intensity used in the solar-gain model.',
+  'L-lat': 'Site latitude, north positive — used to compute the sun’s position for solar gain.',
+  'L-lon': 'Site longitude, west negative — used with the UTC offset to compute solar time.',
+  'L-tz': 'Standard-time UTC offset for the site’s time zone (e.g. −4 for Atlantic Standard Time) — used to compute solar time from clock time.',
+  'L-rho': 'Ground reflectance in front of each wall (albedo) — raises reflected solar gain on walls facing light-coloured ground, pavement, or snow.',
+  'L-af': 'Total conditioned floor area — feeds the internal gains (occupants, lighting/appliances) and is echoed from the design-conditions section.',
+  'L-h': 'Average ceiling height, used to convert floor area to conditioned volume for the ventilation and infiltration calculations.',
+  'L-st': 'Number of storeys above grade — used in the ASHRAE 62.2 infiltration credit and shelter-class calculations.',
+  'L-nbr': 'Number of bedrooms — sets the ASHRAE 62.2 minimum mechanical ventilation rate.',
+  'L-nocc': 'Occupants assumed for the cooling load’s internal sensible and latent heat gains.',
+  'L-qs': 'Sensible heat given off per occupant (body heat that raises air temperature) — ASHRAE default is about 75 W for light activity.',
+  'L-ql': 'Latent heat given off per occupant (moisture from breathing and perspiration) — ASHRAE default is about 55 W for light activity.',
+  'L-qint': 'Sensible heat from lighting, appliances, and electronics running during the cooling design hour.',
+  'L-rw': 'Wall assembly’s insulating value (RSI/R-value) — the whole-wall effective value, not just the insulation batt.',
+  'L-aw': 'Wall exterior colour/finish, which sets the solar absorptance used for sol-air temperature on opaque walls.',
+  'L-uwin': 'Window assembly U-factor (heat loss/gain rate) from the window’s NFRC or CSA label — lower is better.',
+  'L-shgc': 'Window Solar Heat Gain Coefficient from the window’s label — the fraction of incident solar energy that gets into the house. Lower reduces cooling load but also passive solar heating.',
+  'L-rd': 'Door assembly’s insulating value (RSI/R-value).',
+  'L-ar': 'Total roof or top-floor ceiling area exposed to the attic or outdoors.',
+  'L-rr': 'Roof/ceiling assembly’s insulating value (RSI/R-value), including the attic insulation.',
+  'L-ar_abs': 'Roof colour/finish, which sets the solar absorptance used for sol-air temperature on the roof.',
+  'L-af2': 'Foundation and lowest-floor area in contact with the ground or unconditioned space below.',
+  'L-rf': 'Foundation and floor assembly’s effective insulating value (RSI/R-value), including any below-grade soil resistance approximation.',
+  'L-ach50': 'Air changes per hour at 50 Pa pressure difference, from a blower-door test — the standard measure of how airtight the house is.',
+  'L-cls': 'Site exposure to wind, from 1 (very exposed, e.g. open field or shoreline) to 5 (heavily sheltered by trees or buildings) — affects the ACH50-to-infiltration conversion.',
+  'L-wwin': 'Local average wind speed at winter design conditions, used in the infiltration model.',
+  'L-wsum': 'Local average wind speed at summer design conditions, used in the infiltration model.',
+  'L-es': 'Sensible heat-recovery effectiveness of the HRV/ERV, if installed — how much heat is recovered from exhaust air into incoming fresh air.',
+  'L-el': 'Latent (moisture) recovery effectiveness of the ERV, if installed — 0 for a heat-recovery-only HRV with no moisture transfer.',
+  'L-cred': 'Whether to apply the ASHRAE 62.2 credit that lets measured infiltration offset part of the required mechanical ventilation.',
+  'L-wsf': 'ASHRAE 62.2 weather and shielding factor — a regional/site correction applied when using the infiltration credit.',
+  'sel-opt': 'NRCan sizing philosophy: how much of the design heating and cooling loads the heat pump alone is sized to cover, per NRCan’s four sizing options.',
+  'sel-dhl': 'Design heating load from a proper load calculation (e.g. the calculator above), at the design heating temperature.',
+  'sel-tdh': 'Outdoor temperature the design heating load above was calculated at.',
+  'sel-dcl': 'Design cooling load from a proper load calculation, at the design cooling temperature.',
+  'sel-tdc': 'Outdoor temperature the design cooling load above was calculated at.',
+  'td-max': 'Candidate unit’s maximum (full-speed) capacity at a given outdoor temperature, from its extended performance data.',
+  'td-min': 'Candidate unit’s minimum (lowest-speed) capacity at the same outdoor temperature, from its extended performance data.',
+  'hf-bpt': 'Thermal balance point — the outdoor temperature below which the heat pump alone can no longer meet the full heating load and backup heat is needed.',
+  'hf-zone': 'Climate zone used to look up what share of the annual heating season falls below the balance point.',
+  'b-q': 'Design heating load the balance point and backup sizing are based on.',
+  'b-td': 'Outdoor design temperature the load above was calculated at.',
+  'b-ti': 'Indoor setpoint used to draw the building’s heating-load line versus outdoor temperature.',
+  'x-hspf': 'Heating Seasonal Performance Factor 2 rating from the unit’s AHRI certificate — used to back out a seasonal average heating COP.',
+  'x-seer': 'Seasonal Energy Efficiency Ratio 2 rating from the unit’s AHRI certificate — used to back out a seasonal average cooling COP.',
+  'x-cop': 'Coefficient of Performance at the specific outdoor temperature you want a cost comparison for (from the manufacturer’s performance table, not the seasonal HSPF2 average).',
+  'x-el': 'Local electricity price.',
+  'x-fuel': 'Pick the backup/comparison fuel — fills in typical energy content per unit below, and for natural gas also fills in New Brunswick’s current price. Choose Custom to enter your own.',
+  'x-kwh': 'Energy content of one unit of the chosen fuel, in kWh, before appliance efficiency losses.',
+  'x-fp': 'Price of one unit of the chosen fuel. For natural gas this defaults to Liberty Utilities’ New Brunswick residential rate (delivery + supply, about $0.84/m³ effective Sep 1, 2026, excluding the $22.50/month customer charge) — the supply portion changes monthly, so confirm the current rate.',
+  'x-eff': 'Fuel appliance’s efficiency (AFUE for a furnace, or steady-state efficiency) — the fraction of fuel energy delivered as useful heat.',
+  'd-q': 'Heating output the duct system must deliver, at design conditions.',
+  'd-dt': 'Design supply-air temperature minus return-air temperature — a bigger delta-T moves the same heat with less airflow.',
+  'd-tons': 'Cooling capacity of the equipment, used as an alternate way to size airflow from the cooling side.',
+  'd-cpt': 'Airflow per ton of cooling capacity (typically 350–450 CFM/ton) used to size cooling airflow.',
+  'f-esp': 'Rated external static pressure of the air handler/furnace blower at the design airflow, from its fan table.',
+  'f-filter': 'Pressure drop across the filter at design airflow, from the filter’s data or a measurement.',
+  'f-grill': 'Combined pressure drop across all supply grilles and return registers at design airflow.',
+  'f-other': 'Any other fixed pressure losses not already counted — dampers, a coil not included in the unit’s rating, etc.',
+  'f-tel': 'Total effective length of the longest duct run — physical duct length plus the equivalent length of every fitting along it.',
+  's-cfm': 'Airflow this duct run must carry.',
+  's-fr': 'Friction rate (pressure drop per unit duct length) this run is designed to, from the friction-rate calculation above.',
+  's-b': 'Fixed dimension for a rectangular duct, when one side is constrained by the framing or chase it runs through — leave at zero to size a round duct instead.',
+  'p-ref': 'Refrigerant type — sets which pressure/temperature saturation table is used.',
+  'p-ps': 'Measured suction line pressure, gauge.',
+  'p-ts': 'Measured suction line temperature at the same point the pressure was read (compressor end of the suction line).',
+  'p-pl': 'Measured liquid line pressure, gauge.',
+  'p-tl': 'Measured liquid line temperature at the same point the pressure was read (condenser outlet).',
+  'l-ref': 'Refrigerant type — sets the liquid density used for the static-head calculation.',
+  'l-dir': 'Whether the liquid line rises or falls from the outdoor unit to the indoor coil — a rising line loses pressure to elevation, a falling line gains it.',
+  'l-lift': 'Vertical elevation change of the liquid line between the outdoor unit and the indoor coil.',
+  'l-fric': 'Estimated friction pressure loss through the liquid line and any filter-drier, from the line-set length and the manufacturer’s data.',
+  'l-tc': 'Condensing (saturation) temperature at the outdoor unit, from the manufacturer’s data or measured discharge pressure.',
+  'l-sc': 'Liquid subcooling leaving the condenser, from the manufacturer’s data or a measurement.',
+  'c-len': 'Actual installed length of the line set.',
+  'c-std': 'Line length already included in the unit’s factory refrigerant charge, from the installation manual.',
+  'c-oz': 'Additional refrigerant charge required per unit of line length beyond the factory-covered length, from the installation manual.',
+  't-r25': 'Thermistor’s rated resistance at 25°C, from the manufacturer’s datasheet.',
+  't-b': 'Thermistor’s Beta value (a curve-fit constant describing how resistance changes with temperature), from the manufacturer’s datasheet.',
+  't-r': 'Measured resistance of the thermistor, to convert to a temperature reading.',
+  't-tc': 'A temperature to convert the other way, into the resistance you’d expect to measure at that temperature.'
+};
+function mkHelpBtn(text, labelText) {
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'help-i';
+  b.setAttribute('aria-label', 'About ' + labelText.replace(/\s+/g, ' ').trim());
+  b.setAttribute('aria-expanded', 'false');
+  b.textContent = 'i';
+  b.dataset.help = text;
+  return b;
+}
+function addHelpIcons() {
+  Object.keys(HELP).forEach(function (id) {
+    var el = $(id);
+    if (!el) return;
+    var lab = document.querySelector('label[for="' + id + '"]');
+    if (!lab || lab.querySelector('.help-i')) return;
+    lab.appendChild(mkHelpBtn(HELP[id], lab.textContent));
+  });
+  [].forEach.call(document.querySelectorAll('.row.head [data-help]'), function (span) {
+    if (span.querySelector('.help-i')) return;
+    span.appendChild(mkHelpBtn(span.getAttribute('data-help'), span.textContent));
+  });
+}
+addHelpIcons();
+var openPop = null, openBtn = null;
+function closeHelp() {
+  if (openPop) { openPop.parentNode.removeChild(openPop); openPop = null; }
+  if (openBtn) { openBtn.setAttribute('aria-expanded', 'false'); openBtn = null; }
+}
+function positionHelp(btn, pop) {
+  var r = btn.getBoundingClientRect();
+  var top = r.bottom + window.scrollY + 6;
+  var left = r.left + window.scrollX;
+  var maxLeft = window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 12;
+  if (left > maxLeft) left = Math.max(8, maxLeft);
+  pop.style.top = top + 'px';
+  pop.style.left = left + 'px';
+}
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest ? e.target.closest('.help-i') : null;
+  if (btn) {
+    e.preventDefault(); e.stopPropagation();
+    var wasOpenBtn = openBtn === btn;
+    closeHelp();
+    if (!wasOpenBtn) {
+      var pop = document.createElement('div');
+      pop.className = 'help-pop open';
+      pop.textContent = btn.dataset.help;
+      document.body.appendChild(pop);
+      positionHelp(btn, pop);
+      openPop = pop; openBtn = btn;
+      btn.setAttribute('aria-expanded', 'true');
+    }
+    return;
+  }
+  if (openPop && !e.target.closest('.help-pop')) closeHelp();
+});
+window.addEventListener('resize', closeHelp);
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeHelp(); });
 
 })();
 </script>
