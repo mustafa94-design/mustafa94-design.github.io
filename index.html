@@ -1,0 +1,1264 @@
+<title>Heat Pump Sizing Calculators</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F7C8A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HP Calcs">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #FBFCFC;
+  --panel: #FFFFFF;
+  --ink: #1B2E35;
+  --muted: #5E727A;
+  --line: #E1EAEC;
+  --cold: #0F7C8A;
+  --cold-soft: #EEF7F8;
+  --heat: #C24E22;
+  --heat-soft: #FDF1EA;
+  --field: #F6F9FA;
+  --ok: #2B7A4B;
+  --shadow: 0 1px 2px rgba(20, 50, 60, 0.05), 0 4px 14px rgba(20, 50, 60, 0.04);
+  --f-head: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+:root[data-theme="dark"] {
+  --bg: #0D181C;
+  --panel: #132228;
+  --ink: #E2EDF0;
+  --muted: #9CB1B8;
+  --line: #29404A;
+  --cold: #55BAC8;
+  --cold-soft: #143741;
+  --heat: #F29563;
+  --heat-soft: #3A2419;
+  --field: #0F1C21;
+  --ok: #66C088;
+  --shadow: none;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-inline: 16px;
+  padding-block: 0 64px;
+}
+a { color: var(--cold); text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--cold); outline-offset: 2px; }
+h1, h2, h3, h4 { font-family: var(--f-head); line-height: 1.15; text-wrap: balance; margin: 0; }
+p { margin: 0 0 12px; max-width: 68ch; }
+ul, ol { margin: 0 0 12px; padding-left: 1.2em; max-width: 68ch; }
+li { margin-bottom: 4px; }
+code, .mono { font-family: var(--f-mono); font-size: 0.9em; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- header ---------- */
+.top { max-width: 1120px; margin: 0 auto; padding-block: 28px 20px; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: end; justify-content: space-between; }
+.top h1 { font-size: clamp(34px, 6vw, 52px); font-weight: 600; letter-spacing: 0.005em; }
+.top .sub { color: var(--muted); max-width: 52ch; margin: 8px 0 0; }
+.mode { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 3px; gap: 3px; }
+.mode button { font: 500 14px var(--f-body); color: var(--muted); background: transparent; border: 0; padding: 8px 14px; border-radius: 4px; cursor: pointer; }
+.mode button[aria-pressed="true"] { background: var(--cold); color: #fff; }
+:root[data-theme="dark"] .mode button[aria-pressed="true"] { color: #06181C; }
+.mode-note { font-size: 13px; color: var(--muted); margin: 6px 0 0; text-align: right; }
+
+/* ---------- layout ---------- */
+.shell { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 40px; }
+.side { display: none; }
+.chips { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; margin-inline: -16px; padding: 8px 16px; background: var(--bg); border-bottom: 1px solid var(--line); overflow-x: auto; white-space: nowrap; display: flex; gap: 6px; }
+.chips a { font: 500 13px var(--f-body); text-decoration: none; color: var(--ink); border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; background: var(--panel); flex: none; }
+.chips a.on { background: var(--cold); border-color: var(--cold); color: #fff; }
+:root[data-theme="dark"] .chips a.on { color: #06181C; }
+@media (min-width: 980px) {
+  .shell { grid-template-columns: 200px minmax(0, 1fr); }
+  .chips { display: none; }
+  .side { display: block; position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); align-self: start; padding-top: 12px; }
+  .side .lbl { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .side a { display: block; text-decoration: none; color: var(--ink); font-size: 14px; padding: 5px 10px; border-radius: 4px; margin-bottom: 1px; }
+  .side a:hover { background: var(--cold-soft); }
+  .side a.on { background: var(--cold-soft); color: var(--cold); font-weight: 600; }
+}
+main { min-width: 0; }
+
+/* ---------- sections ---------- */
+.sec { padding-block: 40px 8px; border-top: 1px solid var(--line); scroll-margin-top: 56px; }
+.sec:first-child { border-top: 0; padding-top: 16px; }
+.eyebrow { font: 500 12px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.sec h2 { font-size: clamp(28px, 4.5vw, 38px); font-weight: 500; margin-bottom: 16px; }
+.sec h3 { font-size: 21px; font-weight: 500; margin: 28px 0 10px; }
+.sec h4 { font-size: 17px; font-weight: 600; margin: 20px 0 6px; letter-spacing: 0.01em; }
+.plain { background: var(--cold-soft); border: 1px solid #DCEEF0; border-radius: 8px; padding: 14px 18px 6px; margin-bottom: 20px; max-width: 76ch; }
+.plain p { margin-bottom: 10px; }
+.tag { display: block; font: 500 11px var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cold); margin-bottom: 6px; }
+.warn { background: var(--heat-soft); border: 1px solid #F7E0D3; border-radius: 8px; padding: 12px 18px 4px; margin: 16px 0; max-width: 76ch; }
+.warn .tag { color: var(--heat); }
+.app[data-mode="plain"] .deep { display: none; }
+
+.formula { font-family: var(--f-mono); font-size: 14px; background: var(--field); border: 1px solid var(--line); border-radius: 4px; padding: 8px 12px; margin: 8px 0 14px; overflow-x: auto; white-space: pre; max-width: 100%; }
+.scroll { overflow-x: auto; max-width: 100%; margin: 8px 0 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 520px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+td.n, th.n { text-align: right; }
+#L-htbl, #L-ctbl { min-width: 640px; }
+#L-htbl th, #L-htbl td, #L-ctbl th, #L-ctbl td { padding-left: 8px; padding-right: 8px; }
+#L-htbl td.n, #L-ctbl td.n { white-space: nowrap; }
+#L-htbl td:first-child, #L-ctbl td:first-child { min-width: 120px; }
+.arrow-up { color: var(--heat); font-weight: 600; }
+.arrow-dn { color: var(--cold); font-weight: 600; }
+figure { margin: 8px 0 18px; }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; max-width: 68ch; }
+figure svg { display: block; width: 100%; max-width: 780px; height: auto; min-width: 600px; }
+.seg { display: inline-flex; gap: 3px; border: 1px solid var(--line); border-radius: 6px; padding: 3px; background: var(--panel); margin-bottom: 10px; }
+.seg button { font: 500 13px var(--f-body); border: 0; background: transparent; color: var(--muted); padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--heat); color: #fff; }
+:root[data-theme="dark"] .seg button[aria-pressed="true"] { color: #1E0F08; }
+
+/* ---------- calculators ---------- */
+.calc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px 20px 18px; margin: 22px 0; box-shadow: var(--shadow); }
+.calc h3 { margin-top: 0; }
+.calc h4 { margin-top: 24px; }
+.calc h3:first-child, .calc h4:first-child { margin-top: 0; }
+.cell { display: block; }
+.cell small { display: none; font-size: 12px; color: var(--muted); }
+.calc .hint { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px 14px; margin-bottom: 12px; }
+.field { display: grid; gap: 4px; align-content: start; }
+.field label { font-size: 13px; color: var(--muted); }
+.field input, .field select { font: 400 15px var(--f-mono); color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; width: 100%; min-width: 0; }
+.field input:focus, .field select:focus { border-color: var(--cold); }
+.rows { display: grid; gap: 8px; margin-bottom: 12px; }
+.row { display: grid; grid-template-columns: minmax(120px, 1.6fr) minmax(80px, 1fr) minmax(70px, 0.8fr) minmax(70px, 0.8fr); gap: 8px; align-items: center; }
+.row.head { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.row input { font: 400 15px var(--f-mono); color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 4px; padding: 7px 8px; width: 100%; min-width: 0; }
+.row .ua { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); font-size: 14px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.btn { font: 500 14px var(--f-body); color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 4px; padding: 8px 14px; cursor: pointer; }
+.btn:hover { border-color: var(--cold); color: var(--cold); }
+.btn.primary { background: var(--cold); border-color: var(--cold); color: #fff; }
+.btn.primary:hover { color: #fff; filter: brightness(1.08); }
+:root[data-theme="dark"] .btn.primary { color: #06181C; }
+.results { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 6px; }
+.res { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+.res .k { color: var(--muted); font-size: 14px; }
+.res .v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 500; }
+.res.big .k { color: var(--ink); font-weight: 600; }
+.res.big .v { font-size: 26px; color: var(--heat); }
+.res.big .v.cold { color: var(--cold); }
+.note { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+.msg { font-size: 14px; margin: 8px 0 0; color: var(--heat); }
+.bars { display: grid; gap: 6px; margin-top: 8px; }
+.bar { display: grid; grid-template-columns: 110px 1fr 150px; gap: 10px; align-items: center; font-size: 13px; }
+.row.r3 { grid-template-columns: minmax(70px, 0.8fr) 1fr 1fr; }
+/* --- units toggle, per-facade rows --- */
+.ctl { display: flex; flex-direction: column; gap: 8px; }
+.row.r5 { grid-template-columns: minmax(50px, 0.6fr) repeat(4, 1fr); }
+.res-h { margin-top: 28px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.legend i { display: inline-block; width: 22px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.bar .t { height: 12px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar .t i { display: block; height: 100%; background: var(--heat); }
+.bar .p { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+.chart { overflow-x: auto; margin-top: 12px; }
+.chart svg { display: block; width: 100%; height: auto; min-width: 560px; }
+
+/* ---------- decision trees ---------- */
+.tree { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin: 16px 0; box-shadow: var(--shadow); }
+.tree .path { font: 400 12px var(--f-mono); color: var(--muted); margin: 0 0 10px; min-height: 1.4em; max-width: none; }
+.tree .q { font-family: var(--f-head); font-size: 22px; font-weight: 600; line-height: 1.25; margin: 0 0 8px; max-width: 60ch; }
+.tree .why { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+.tree .res-title { font-family: var(--f-head); font-size: 24px; font-weight: 600; color: var(--heat); margin: 0 0 8px; }
+.tree ol, .tree ul { margin-bottom: 10px; }
+.tree-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+.tree-tabs .btn[aria-pressed="true"] { background: var(--cold-soft); border-color: var(--cold); color: var(--cold); }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.qa { border-top: 1px solid var(--line); padding: 12px 0 2px; }
+.qa h4 { margin: 0 0 4px; }
+.links li { margin-bottom: 8px; }
+.links .src { color: var(--muted); font-size: 13px; }
+footer { max-width: 1120px; margin: 40px auto 0; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; }
+footer p { max-width: 80ch; }
+
+@media (max-width: 560px) {
+  .row { grid-template-columns: 1fr 1fr; }
+  .row.head { display: none; }
+  .row .lab { grid-column: 1 / -1; font-weight: 500; font-size: 14px; }
+  .row .ua { grid-column: 1 / -1; text-align: left; }
+  .row .ua::before { content: 'UA '; }
+  .row .ua::after { content: ' BTU/h\00b7\00b0F'; }
+  .cell small { display: block; }
+  .row.r3 { grid-template-columns: 1fr 1fr; }
+  .row.r5 { grid-template-columns: 1fr 1fr; }
+
+  .bar { grid-template-columns: 78px 1fr 120px; gap: 8px; }
+  .top { align-items: start; }
+  .mode-note { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+</style>
+<div class="app" id="app" data-mode="full">
+
+<header class="top">
+  <div>
+    <p class="eyebrow">Residential air-source heat pumps &middot; quick reference</p>
+    <h1>Heat Pump Sizing Calculators</h1>
+    <p class="sub">Load, selection and sizing, duct, refrigerant and thermistor calculators only &mdash; for the plain-language explanations, worked examples and troubleshooting trees, see the <a href="https://claude.ai/artifact/EMyaKj5kDaCeCF7kUZ3BDm">full Heat Pump Field Guide</a>.</p>
+  </div>
+  <div>
+    <div class="ctl">
+      <div class="mode" role="group" aria-label="Unit system">
+        <button type="button" id="u-ip" aria-pressed="true">IP units</button>
+        <button type="button" id="u-si" aria-pressed="false">SI units</button>
+      </div>
+    </div>
+    <p class="mode-note">Units switch every calculator.</p>
+  </div>
+</header>
+
+<div class="chips" id="chips" aria-label="Sections"></div>
+
+<div class="shell">
+<nav class="side" id="side" aria-label="Sections"></nav>
+<main>
+
+<!-- ===================== LOAD ===================== -->
+<section class="sec" id="load" data-nav="Load and ventilation">
+  <p class="eyebrow">ASHRAE 62.2 &middot; envelope UA &middot; clear-sky solar cooling</p>
+  <h2>Load and ventilation</h2>
+<div class="calc" id="calc-load">
+    <h3>ASHRAE load and ventilation calculator</h3>
+    <p class="hint">Every value is an example house near Fredericton, NB. Replace them with project data. Changes update all results below instantly. Use the IP / SI switch at the top of the page to change units.</p>
+
+    <h4>1. Design conditions</h4>
+    <div class="grid"><div class="field"><label for="L-two">Winter outdoor design temp (<span class="u" data-q="temp"></span>)</label><input id="L-two" type="number" inputmode="decimal" data-q="temp" data-c="-25"></div><div class="field"><label for="L-twi">Winter indoor temp (<span class="u" data-q="temp"></span>)</label><input id="L-twi" type="number" inputmode="decimal" data-q="temp" data-c="21"></div><div class="field"><label for="L-tso">Summer outdoor dry-bulb (design) (<span class="u" data-q="temp"></span>)</label><input id="L-tso" type="number" inputmode="decimal" data-q="temp" data-c="28"></div><div class="field"><label for="L-twb">Coincident wet-bulb (<span class="u" data-q="temp"></span>)</label><input id="L-twb" type="number" inputmode="decimal" data-q="temp" data-c="20"></div><div class="field"><label for="L-dr">Daily temperature range (<span class="u" data-q="dt"></span>)</label><input id="L-dr" type="number" inputmode="decimal" data-q="dt" data-c="10"></div><div class="field"><label for="L-tsi">Summer indoor dry-bulb (<span class="u" data-q="temp"></span>)</label><input id="L-tsi" type="number" inputmode="decimal" data-q="temp" data-c="24"></div><div class="field"><label for="L-rh">Summer indoor RH (%)</label><input id="L-rh" type="number" inputmode="decimal" value="50"></div><div class="field"><label for="L-mon">Design month</label><select id="L-mon"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7" selected>July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div><div class="field"><label for="L-lat">Latitude (°N)</label><input id="L-lat" type="number" inputmode="decimal" step="0.1" value="45.9"></div><div class="field"><label for="L-lon">Longitude (°, west negative)</label><input id="L-lon" type="number" inputmode="decimal" step="0.1" value="-66.6"></div><div class="field"><label for="L-tz">UTC offset, standard time (h)</label><input id="L-tz" type="number" inputmode="decimal" value="-4"></div><div class="field"><label for="L-rho">Ground reflectance</label><input id="L-rho" type="number" inputmode="decimal" step="0.05" value="0.2"></div></div>
+    <p class="note">Take design temperatures from ASHRAE climatic design data (the Weather Data Viewer) or the project specification: winter 99.6 % or 99 % dry-bulb, summer 0.4 % or 1 % dry-bulb with mean coincident wet-bulb, and mean daily range. The values shown are placeholders, not Fredericton data.</p>
+
+    <h4>2. Building</h4>
+    <div class="grid"><div class="field"><label for="L-af">Conditioned floor area (<span class="u" data-q="area"></span>)</label><input id="L-af" type="number" inputmode="decimal" data-q="area" data-c="140"></div><div class="field"><label for="L-h">Ceiling height (<span class="u" data-q="len"></span>)</label><input id="L-h" type="number" inputmode="decimal" data-q="len" data-c="2.4384"></div><div class="field"><label for="L-st">Storeys above grade</label><select id="L-st"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></div><div class="field"><label for="L-nbr">Bedrooms</label><input id="L-nbr" type="number" inputmode="decimal" value="3"></div><div class="field"><label for="L-nocc">Occupants (cooling)</label><input id="L-nocc" type="number" inputmode="decimal" value="4"></div><div class="field"><label for="L-qs">Sensible gain per person (<span class="u" data-q="pow"></span>)</label><input id="L-qs" type="number" inputmode="decimal" data-q="pow" data-c="75"></div><div class="field"><label for="L-ql">Latent gain per person (<span class="u" data-q="pow"></span>)</label><input id="L-ql" type="number" inputmode="decimal" data-q="pow" data-c="55"></div><div class="field"><label for="L-qint">Lighting and appliances (sensible) (<span class="u" data-q="pow"></span>)</label><input id="L-qint" type="number" inputmode="decimal" data-q="pow" data-c="400"></div></div>
+
+    <h4>3. Envelope by orientation</h4>
+    <p class="hint">Azimuth is measured clockwise from north: N = 0, E = 90, S = 180, W = 270. Enter any angle for a rotated house. Gross wall area includes the windows and doors on that facade.</p>
+    <div class="rows" id="L-env"><div class="row r5 head"><span>Facade</span><span>Azimuth (° from north)</span><span>Gross wall area</span><span>Windows</span><span>Doors</span></div><div class="row r5"><span class="lab" id="L-n1"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az1" type="number" inputmode="decimal" data-q="deg" data-c="0" aria-label="Facade 1 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g1" type="number" inputmode="decimal" data-q="area" data-c="30" aria-label="Facade 1 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w1" type="number" inputmode="decimal" data-q="area" data-c="3.0" aria-label="Facade 1 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d1" type="number" inputmode="decimal" data-q="area" data-c="1.9" aria-label="Facade 1 door area"></label></div><div class="row r5"><span class="lab" id="L-n2"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az2" type="number" inputmode="decimal" data-q="deg" data-c="90" aria-label="Facade 2 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g2" type="number" inputmode="decimal" data-q="area" data-c="31" aria-label="Facade 2 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w2" type="number" inputmode="decimal" data-q="area" data-c="4.0" aria-label="Facade 2 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d2" type="number" inputmode="decimal" data-q="area" data-c="0" aria-label="Facade 2 door area"></label></div><div class="row r5"><span class="lab" id="L-n3"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az3" type="number" inputmode="decimal" data-q="deg" data-c="180" aria-label="Facade 3 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g3" type="number" inputmode="decimal" data-q="area" data-c="32" aria-label="Facade 3 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w3" type="number" inputmode="decimal" data-q="area" data-c="7.0" aria-label="Facade 3 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d3" type="number" inputmode="decimal" data-q="area" data-c="0" aria-label="Facade 3 door area"></label></div><div class="row r5"><span class="lab" id="L-n4"></span><label class="cell"><small>Azimuth (°)</small><input id="L-az4" type="number" inputmode="decimal" data-q="deg" data-c="270" aria-label="Facade 4 azimuth"></label><label class="cell"><small>Gross wall (<span class="u" data-q="area"></span>)</small><input id="L-g4" type="number" inputmode="decimal" data-q="area" data-c="31" aria-label="Facade 4 gross wall area"></label><label class="cell"><small>Windows (<span class="u" data-q="area"></span>)</small><input id="L-w4" type="number" inputmode="decimal" data-q="area" data-c="4.6" aria-label="Facade 4 window area"></label><label class="cell"><small>Doors (<span class="u" data-q="area"></span>)</small><input id="L-d4" type="number" inputmode="decimal" data-q="area" data-c="1.8" aria-label="Facade 4 door area"></label></div></div>
+    <div class="grid"><div class="field"><label for="L-rw">Wall insulation (<span class="u" data-q="rsi"></span>)</label><input id="L-rw" type="number" inputmode="decimal" step="0.1" data-q="rsi" data-c="3.522"></div><div class="field"><label for="L-aw">Wall colour (solar absorptance)</label><select id="L-aw"><option value="0.45">Light (0.45)</option><option value="0.675" selected>Medium (0.675)</option><option value="0.9">Dark (0.90)</option></select></div><div class="field"><label for="L-uwin">Window U-factor (<span class="u" data-q="u"></span>)</label><input id="L-uwin" type="number" inputmode="decimal" step="0.05" data-q="u" data-c="1.8"></div><div class="field"><label for="L-shgc">Window SHGC</label><input id="L-shgc" type="number" inputmode="decimal" step="0.01" value="0.4"></div><div class="field"><label for="L-rd">Door insulation (<span class="u" data-q="rsi"></span>)</label><input id="L-rd" type="number" inputmode="decimal" step="0.1" data-q="rsi" data-c="0.88"></div><div class="field"><label for="L-ar">Roof / ceiling area (<span class="u" data-q="area"></span>)</label><input id="L-ar" type="number" inputmode="decimal" data-q="area" data-c="93"></div><div class="field"><label for="L-rr">Roof / ceiling insulation (<span class="u" data-q="rsi"></span>)</label><input id="L-rr" type="number" inputmode="decimal" step="0.1" data-q="rsi" data-c="8.8"></div><div class="field"><label for="L-ar_abs">Roof colour (solar absorptance)</label><select id="L-ar_abs"><option value="0.45">Light (0.45)</option><option value="0.675">Medium (0.675)</option><option value="0.9" selected>Dark (0.90)</option></select></div><div class="field"><label for="L-af2">Foundation and floor area (<span class="u" data-q="area"></span>)</label><input id="L-af2" type="number" inputmode="decimal" data-q="area" data-c="93"></div><div class="field"><label for="L-rf">Foundation and floor, effective (<span class="u" data-q="rsi"></span>)</label><input id="L-rf" type="number" inputmode="decimal" step="0.1" data-q="rsi" data-c="3.522"></div></div>
+
+    <h4>4. Air tightness and ventilation</h4>
+    <div class="grid"><div class="field"><label for="L-ach50">Air tightness, ACH at 50 Pa</label><input id="L-ach50" type="number" inputmode="decimal" step="0.1" value="3.0"></div><div class="field"><label for="L-cls">Shelter class (1 exposed, 5 heavily sheltered)</label><select id="L-cls"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></div><div class="field"><label for="L-wwin">Site wind speed, winter design (<span class="u" data-q="vel"></span>)</label><input id="L-wwin" type="number" inputmode="decimal" step="0.5" data-q="vel" data-c="5.0"></div><div class="field"><label for="L-wsum">Site wind speed, summer design (<span class="u" data-q="vel"></span>)</label><input id="L-wsum" type="number" inputmode="decimal" step="0.5" data-q="vel" data-c="3.0"></div><div class="field"><label for="L-es">Ventilation heat recovery, sensible (%)</label><input id="L-es" type="number" inputmode="decimal" value="65"></div><div class="field"><label for="L-el">Ventilation heat recovery, latent (%)</label><input id="L-el" type="number" inputmode="decimal" value="0"></div><div class="field"><label for="L-cred">62.2 infiltration credit</label><select id="L-cred"><option value="no" selected>Not applied</option><option value="yes">Applied</option></select></div><div class="field"><label for="L-wsf">Weather and shielding factor, wsf</label><input id="L-wsf" type="number" inputmode="decimal" step="0.05" value="0.7"></div></div>
+
+    <h4 class="res-h">Ventilation (ASHRAE 62.2)</h4>
+    <div class="results" id="L-vout" aria-live="polite"></div>
+
+    <h4 class="res-h">Heating design load</h4>
+    <div class="results" id="L-hout" aria-live="polite"></div>
+    <div class="scroll"><table id="L-htbl"></table></div>
+    <div class="bars" id="L-hbars"></div>
+    <div class="actions"><button type="button" class="btn" id="L-send">Send this load and design temperatures to the balance-point calculator</button></div>
+
+    <h4 class="res-h">Cooling load, design-day peak (estimate)</h4>
+    <div class="results" id="L-cout" aria-live="polite"></div>
+    <div class="bars" id="L-cbars"></div>
+    <div class="chart" id="L-cchart"></div>
+    <div class="scroll"><table id="L-ctbl"></table></div>
+    <p class="note" id="L-cnote"></p>
+  </div>
+</section>
+
+<!-- ===================== SELECT ===================== -->
+<section class="sec" id="select" data-nav="Selecting an ASHP">
+  <p class="eyebrow">NRCan sizing options 4A&ndash;4D</p>
+  <h2>Selecting an ASHP</h2>
+<div class="calc" id="calc-target">
+    <h3>Target capacity (Equations 3&ndash;5)</h3>
+    <p class="hint">Defaults match the guide's own worked example: 49,600 BTU/h heating at &minus;4&nbsp;&deg;F, 23,600 BTU/h cooling at 88&nbsp;&deg;F.</p>
+    <div class="grid">
+      <div class="field"><label for="sel-opt">Sizing option</label>
+        <select id="sel-opt">
+          <option value="4A">4A &mdash; emphasis on cooling</option>
+          <option value="4B">4B &mdash; balanced heating and cooling</option>
+          <option value="4C" selected>4C &mdash; emphasis on heating</option>
+          <option value="4D">4D &mdash; sized to design heating load</option>
+        </select>
+      </div>
+      <div class="field"><label for="sel-dhl">Design heating load (<span class="u" data-q="pow"></span>)</label><input data-q="pow" data-c="14536.32" id="sel-dhl" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="sel-tdh">Design heating temp (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="-20" id="sel-tdh" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="sel-dcl">Design cooling load (<span class="u" data-q="pow"></span>)</label><input data-q="pow" data-c="6916.48" id="sel-dcl" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="sel-tdc">Design cooling temp (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="31.111" id="sel-tdc" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="actions"><button type="button" class="btn" id="sel-use">Use the loads from the calculator above</button></div>
+    <div class="results" id="sel-out" aria-live="polite"></div>
+  </div>
+<div class="calc" id="calc-turndown">
+    <h3>Turn-down ratio</h3>
+    <p class="hint">Maximum and minimum capacity of a candidate unit, at the same outdoor temperature (from its extended performance data).</p>
+    <div class="grid">
+      <div class="field"><label for="td-max">Maximum capacity (<span class="u" data-q="pow"></span>)</label><input data-q="pow" data-c="14060" id="td-max" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="td-min">Minimum capacity (<span class="u" data-q="pow"></span>)</label><input data-q="pow" data-c="6390" id="td-min" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="results" id="td-out" aria-live="polite"></div>
+  </div>
+<div class="calc" id="calc-heatfrac">
+    <h3>Fraction of annual heating above the balance point</h3>
+    <p class="hint">Approximate, digitized from the guide's Figure 22. For a specific project, read the value from the guide's chart, your local climate file, or a HOT2000 run.</p>
+    <div class="grid">
+      <div class="field"><label for="hf-bpt">Thermal balance point (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="-2" id="hf-bpt" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="hf-zone">Climate zone</label>
+        <select id="hf-zone">
+          <option value="marine">Marine</option>
+          <option value="colddry">Cold-Dry</option>
+          <option value="coldhumid" selected>Cold-Humid</option>
+          <option value="verycold">Very-Cold</option>
+          <option value="subarctic">Subarctic</option>
+        </select>
+      </div>
+    </div>
+    <div class="actions"><button type="button" class="btn" id="hf-use">Use the balance point from the calculator below</button></div>
+    <div class="results" id="hf-out" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ===================== SIZING ===================== -->
+<section class="sec" id="sizing" data-nav="Equipment sizing">
+  <p class="eyebrow">Balance point &middot; backup heat &middot; cost</p>
+  <h2>Equipment sizing</h2>
+<div class="calc" id="calc-bal">
+    <h3>Balance point and backup heat</h3>
+    <p class="hint">Enter the heat pump's maximum capacity at several outdoor temperatures from the manufacturer's performance table. The four capacity points below are illustrative, not a real model.</p>
+    <div class="grid">
+      <div class="field"><label for="b-q">Design heating load (<span class="u" data-q="pow"></span>)</label><input data-q="pow" data-c="7326.8" id="b-q" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="b-td">Design outdoor temp (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="-25" id="b-td" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="b-ti">Indoor setpoint (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="21" id="b-ti" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="actions"><button type="button" class="btn" id="b-use">Use the heating load from the calculator above</button></div>
+    <div class="rows">
+      <div class="row r3 head"><span>Point</span><span>Outdoor temp (<span class="u" data-q="temp"></span>)</span><span>Max capacity (<span class="u" data-q="pow"></span>)</span></div>
+      <div class="row r3"><span class="lab">Point 1</span><label class="cell"><small>Outdoor temp (<span class="u" data-q="temp"></span>)</small><input data-q="temp" data-c="8" id="b-t1" type="number" inputmode="decimal" aria-label="Point 1 temperature"></label><label class="cell"><small>Max capacity (<span class="u" data-q="pow"></span>)</small><input data-q="pow" data-c="10550.6" id="b-c1" type="number" inputmode="decimal" aria-label="Point 1 capacity"></label></div>
+      <div class="row r3"><span class="lab">Point 2</span><label class="cell"><small>Outdoor temp (<span class="u" data-q="temp"></span>)</small><input data-q="temp" data-c="-8" id="b-t2" type="number" inputmode="decimal" aria-label="Point 2 temperature"></label><label class="cell"><small>Max capacity (<span class="u" data-q="pow"></span>)</small><input data-q="pow" data-c="8792.2" id="b-c2" type="number" inputmode="decimal" aria-label="Point 2 capacity"></label></div>
+      <div class="row r3"><span class="lab">Point 3</span><label class="cell"><small>Outdoor temp (<span class="u" data-q="temp"></span>)</small><input data-q="temp" data-c="-15" id="b-t3" type="number" inputmode="decimal" aria-label="Point 3 temperature"></label><label class="cell"><small>Max capacity (<span class="u" data-q="pow"></span>)</small><input data-q="pow" data-c="7619.8" id="b-c3" type="number" inputmode="decimal" aria-label="Point 3 capacity"></label></div>
+      <div class="row r3"><span class="lab">Point 4</span><label class="cell"><small>Outdoor temp (<span class="u" data-q="temp"></span>)</small><input data-q="temp" data-c="-25" id="b-t4" type="number" inputmode="decimal" aria-label="Point 4 temperature"></label><label class="cell"><small>Max capacity (<span class="u" data-q="pow"></span>)</small><input data-q="pow" data-c="5861.4" id="b-c4" type="number" inputmode="decimal" aria-label="Point 4 capacity"></label></div>
+    </div>
+    <div class="results" id="b-out" aria-live="polite"></div>
+    <div class="chart" id="b-chart"></div>
+    <p class="note">Capacity between points is interpolated in a straight line, and extended past the end points using the last slope. Real curves bend, so add points near the design temperature.</p>
+  </div>
+<div class="calc" id="calc-eff">
+    <h3>Efficiency and cost of heat</h3>
+    <p class="hint">Example prices. Enter your own.</p>
+    <div class="grid">
+      <div class="field"><label for="x-hspf">HSPF2</label><input id="x-hspf" type="number" inputmode="decimal" step="0.1" value="8.5"></div>
+      <div class="field"><label for="x-seer">SEER2</label><input id="x-seer" type="number" inputmode="decimal" step="0.1" value="16"></div>
+      <div class="field"><label for="x-cop">COP at the temperature of interest</label><input id="x-cop" type="number" inputmode="decimal" step="0.1" value="2.5"></div>
+      <div class="field"><label for="x-el">Electricity ($/kWh)</label><input id="x-el" type="number" inputmode="decimal" step="0.01" value="0.14"></div>
+      <div class="field"><label for="x-fuel">Fuel</label>
+        <select id="x-fuel"><option value="10.6">Heating oil (per L)</option><option value="7.03">Propane (per L)</option><option value="10.5">Natural gas (per m&sup3;)</option><option value="1">Custom</option></select></div>
+      <div class="field"><label for="x-kwh">Energy per unit (kWh)</label><input id="x-kwh" type="number" inputmode="decimal" step="0.01" value="10.6"></div>
+      <div class="field"><label for="x-fp">Fuel price ($/unit)</label><input id="x-fp" type="number" inputmode="decimal" step="0.01" value="1.60"></div>
+      <div class="field"><label for="x-eff">Fuel appliance efficiency (%)</label><input id="x-eff" type="number" inputmode="decimal" value="85"></div>
+    </div>
+    <div class="results" id="x-out" aria-live="polite"></div>
+    <p class="note">Energy per unit: oil about 38.2 MJ/L, propane about 25.3 MJ/L, natural gas about 37.7 MJ/m&sup3;. Confirm current values and prices before quoting.</p>
+  </div>
+</section>
+
+<!-- ===================== DUCTS ===================== -->
+<section class="sec" id="ducts" data-nav="Duct sizing">
+  <p class="eyebrow">ACCA Manual D &middot; ASHRAE friction chart</p>
+  <h2>Duct sizing</h2>
+<div class="calc" id="calc-duct">
+    <h3>Duct workbench</h3>
+    <h4>1. Airflow from capacity</h4>
+    <div class="grid">
+      <div class="field"><label for="d-q">Heating output (<span class="u" data-q="pow"></span>)</label><input data-q="pow" data-c="10550.6" id="d-q" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="d-dt">Supply minus return (<span class="u" data-q="dt"></span>)</label><input data-q="dt" data-c="13.89" id="d-dt" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="d-tons">Cooling capacity (<span class="u" data-q="cap"></span>)</label><input data-q="cap" data-c="10.55" id="d-tons" type="number" inputmode="decimal" step="0.5"></div>
+      <div class="field"><label for="d-cpt">Airflow per cooling capacity (<span class="u" data-q="cpk"></span>)</label><input data-q="cpk" data-c="53.68" id="d-cpt" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="results" id="d-out" aria-live="polite"></div>
+
+    <h4>2. Friction rate from the static budget</h4>
+    <div class="grid">
+      <div class="field"><label for="f-esp">Unit rated ESP (<span class="u" data-q="pa"></span>)</label><input data-q="pa" data-c="124.54" id="f-esp" type="number" inputmode="decimal" step="0.01"></div>
+      <div class="field"><label for="f-filter">Filter (<span class="u" data-q="pa"></span>)</label><input data-q="pa" data-c="24.91" id="f-filter" type="number" inputmode="decimal" step="0.01"></div>
+      <div class="field"><label for="f-grill">Grilles and registers (<span class="u" data-q="pa"></span>)</label><input data-q="pa" data-c="14.945" id="f-grill" type="number" inputmode="decimal" step="0.01"></div>
+      <div class="field"><label for="f-other">Dampers, coil not in rating, other (<span class="u" data-q="pa"></span>)</label><input data-q="pa" data-c="0" id="f-other" type="number" inputmode="decimal" step="0.01"></div>
+      <div class="field"><label for="f-tel">Total effective length (<span class="u" data-q="len"></span>)</label><input data-q="len" data-c="76.2" id="f-tel" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="results" id="f-out" aria-live="polite"></div>
+    <div class="actions"><button type="button" class="btn" id="f-send">Send this friction rate to the duct sizer</button></div>
+
+    <h4>3. Equal-friction duct sizer</h4>
+    <div class="grid">
+      <div class="field"><label for="s-cfm">Airflow (<span class="u" data-q="flow"></span>)</label><input data-q="flow" data-c="188.78" id="s-cfm" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="s-fr">Friction rate (<span class="u" data-q="fr"></span>)</label><input data-q="fr" data-c="0.8172" id="s-fr" type="number" inputmode="decimal" step="0.01"></div>
+      <div class="field"><label for="s-b">Fixed rectangular side (<span class="u" data-q="mm"></span>)</label><input data-q="mm" data-c="203.2" id="s-b" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="results" id="s-out" aria-live="polite"></div>
+    <p class="note">Example values only. Take the rated ESP and airflow limits from the equipment data, and verify the design against Manual D or the project specification.</p>
+  </div>
+</section>
+
+<!-- ===================== PIPING ===================== -->
+<section class="sec" id="piping" data-nav="Refrigerant piping">
+  <p class="eyebrow">Superheat &middot; subcooling &middot; lift &middot; charge</p>
+  <h2>Refrigerant workbench</h2>
+<div class="calc" id="calc-ref">
+    <h3>Refrigerant workbench</h3>
+    <h4>1. Superheat, subcooling and pressure ratio</h4>
+    <p class="hint">Saturation values are computed from real-fluid property data (CoolProp). Superheat uses the dew point, subcooling uses the bubble point, so it is correct for blends with glide such as R-454B. Example readings shown.</p>
+    <div class="grid">
+      <div class="field"><label for="p-ref">Refrigerant</label>
+        <select id="p-ref"><option value="R410A">R-410A</option><option value="R32">R-32</option><option value="R454B">R-454B</option><option value="R22">R-22 (legacy)</option></select></div>
+      <div class="field"><label for="p-ps">Suction pressure (<span class="u" data-q="kpag"></span>)</label><input data-q="kpag" data-c="896.3" id="p-ps" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="p-ts">Suction line temp (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="12.78" id="p-ts" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="p-pl">Liquid pressure (<span class="u" data-q="kpag"></span>)</label><input data-q="kpag" data-c="2413.2" id="p-pl" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="p-tl">Liquid line temp (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="35" id="p-tl" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="results" id="p-out" aria-live="polite"></div>
+    <p class="note">Gauge pressure uses 14.7 psi atmospheric. Measure superheat at the compressor end of the suction line and subcooling at the condenser outlet, at steady state. Inverter and EEV systems are usually charged by weight and controller data, not by these numbers. Always use the manufacturer's target values.</p>
+
+    <h4>2. Liquid line lift and flash-gas margin</h4>
+    <div class="grid">
+      <div class="field"><label for="l-ref">Refrigerant</label>
+        <select id="l-ref"><option value="R410A">R-410A</option><option value="R32">R-32</option><option value="R454B">R-454B</option><option value="R22">R-22 (legacy)</option></select></div>
+      <div class="field"><label for="l-dir">Liquid line runs</label>
+        <select id="l-dir"><option value="up">Upward (loses pressure)</option><option value="down">Downward (gains pressure)</option></select></div>
+      <div class="field"><label for="l-lift">Vertical lift (<span class="u" data-q="len"></span>)</label><input data-q="len" data-c="9.144" id="l-lift" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="l-fric">Friction loss in line and drier (<span class="u" data-q="kpa"></span>)</label><input data-q="kpa" data-c="20.684" id="l-fric" type="number" inputmode="decimal" step="0.5"></div>
+      <div class="field"><label for="l-tc">Condensing saturation temp (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="40.56" id="l-tc" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="l-sc">Subcooling leaving condenser (<span class="u" data-q="dt"></span>)</label><input data-q="dt" data-c="5.556" id="l-sc" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="results" id="l-out" aria-live="polite"></div>
+    <p class="note">Static head is density &times; g &times; height, using liquid density at 40 &deg;C. Friction loss must come from the manufacturer's data.</p>
+
+    <h4>3. Extra refrigerant for long line sets</h4>
+    <div class="grid">
+      <div class="field"><label for="c-len">Actual line length (<span class="u" data-q="len"></span>)</label><input data-q="len" data-c="15.24" id="c-len" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="c-std">Length covered by factory charge (<span class="u" data-q="len"></span>)</label><input data-q="len" data-c="7.62" id="c-std" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="c-oz">Added charge rate (<span class="u" data-q="gm"></span>)</label><input data-q="gm" data-c="55.81" id="c-oz" type="number" inputmode="decimal" step="0.05"></div>
+    </div>
+    <div class="results" id="c-out" aria-live="polite"></div>
+    <p class="note">The rate is an example. It depends on the liquid line diameter and the refrigerant, so use the value in the installation manual. Some manufacturers require no removal for shorter lines and others do; follow the manual.</p>
+  </div>
+</section>
+
+<!-- ===================== CONTROLS ===================== -->
+<section class="sec" id="controls" data-nav="Thermistor">
+  <p class="eyebrow">Defrost / ambient sensor</p>
+  <h2>Thermistor</h2>
+<div class="calc" id="calc-ntc">
+    <h3>Thermistor check</h3>
+    <p class="hint">Beta-parameter approximation for an NTC thermistor. Many products use a different R25 or B value, or a published table. Use the unit's own data when you have it.</p>
+    <div class="grid">
+      <div class="field"><label for="t-r25">R at 25 &deg;C (ohms)</label><input id="t-r25" type="number" inputmode="decimal" value="10000"></div>
+      <div class="field"><label for="t-b">Beta (K)</label><input id="t-b" type="number" inputmode="decimal" value="3950"></div>
+      <div class="field"><label for="t-r">Measured resistance (ohms)</label><input id="t-r" type="number" inputmode="decimal" value="19900"></div>
+      <div class="field"><label for="t-tc">Or a temperature (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="0" id="t-tc" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="results" id="t-out" aria-live="polite"></div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <p>The calculators use example values and simplified methods, for quick sizing and field checks. They do not replace a CSA F280 load calculation, the manufacturer's installation manual and performance data, or the applicable codes. See the <a href="https://claude.ai/artifact/EMyaKj5kDaCeCF7kUZ3BDm">full Heat Pump Field Guide</a> for methodology and sources.</p>
+</footer>
+
+</div>
+<script>
+(function () {
+'use strict';
+/* ---------- helpers ---------- */
+var $ = function (id) { return document.getElementById(id); };
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function fmt(n, d) {
+  if (!isFinite(n)) return '—';
+  return n.toLocaleString('en-CA', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
+}
+/* what an input box shows: 4 significant figures, whole numbers from 100 up (calculations use the exact canonical value) */
+function fmtNum(x) { return Math.abs(x) >= 100 ? String(Math.round(x)) : String(parseFloat(x.toPrecision(4))); }
+function res(k, val, cls, vcls) {
+  return '<div class="res' + (cls ? ' ' + cls : '') + '"><span class="k">' + k + '</span><span class="v' + (vcls ? ' ' + vcls : '') + '">' + val + '</span></div>';
+}
+function on(ids, fn) {
+  ids.forEach(function (id) { var el = $(id); if (!el) return; el.addEventListener('input', fn); el.addEventListener('change', fn); });
+}
+function niceStep(range, target) {
+  var raw = range / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / mag;
+  return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
+}
+
+/* ---------- unit system (calculations run in SI; IP is a display layer) ---------- */
+var UNIT = 'ip';
+var Q = {
+  area: { si: 'm²', ip: 'ft²', k: 10.76391 },
+  rsi:  { si: 'RSI', ip: 'R', k: 5.678263 },
+  u:    { si: 'W/m²·K', ip: 'BTU/h·ft²·°F', k: 0.1761102 },
+  vol:  { si: 'm³', ip: 'ft³', k: 35.31467 },
+  flow: { si: 'L/s', ip: 'CFM', k: 2.11888 },
+  pow:  { si: 'W', ip: 'BTU/h', k: 3.412142 },
+  temp: { si: '°C', ip: '°F', k: 1.8, off: 32 },
+  dt:   { si: 'K', ip: '°F', k: 1.8 },
+  kpag: { si: 'kPa gauge', ip: 'psig', k: 0.1450377 },
+  kpa:  { si: 'kPa', ip: 'psi', k: 0.1450377 },
+  kpm:  { si: 'kPa/m', ip: 'psi/ft', k: 0.04420800 },
+  pa:   { si: 'Pa', ip: 'in.wg', k: 0.004014632 },
+  fr:   { si: 'Pa/m', ip: 'in.wg/100 ft', k: 0.122365 },
+  len:  { si: 'm', ip: 'ft', k: 3.28084 },
+  mm:   { si: 'mm', ip: 'in', k: 0.03937008 },
+  vel:  { si: 'm/s', ip: 'fpm', k: 196.8504 },
+  gm:   { si: 'g/m', ip: 'oz/ft', k: 0.0107516 },
+  cap:  { si: 'kW', ip: 'tons', k: 0.2843451 },
+  cpk:  { si: 'L/s per kW', ip: 'CFM/ton', k: 7.451807 },
+  deg:  { si: '°', ip: '°', k: 1 },
+  wm2:  { si: 'W/m²', ip: 'BTU/h·ft²', k: 0.3169983 }
+};
+function conv(q, si, u) { var d = Q[q]; return u === 'si' ? si : si * d.k + (d.off || 0); }
+function toDisp(q, si) { return conv(q, si, UNIT); }
+function fromDisp(q, x, u) { var d = Q[q]; return (u || UNIT) === 'si' ? x : (x - (d.off || 0)) / d.k; }
+function ul(q) { return Q[q][UNIT]; }
+function otherU() { return UNIT === 'ip' ? 'si' : 'ip'; }
+function fu(q, si, u, d) { var dd = Array.isArray(d) ? (u === 'ip' ? d[0] : d[1]) : d; return fmt(conv(q, si, u), dd) + ' ' + Q[q][u]; }
+function F(q, si, d) { return fu(q, si, UNIT, d); }
+function dual(q, si, d) { return fu(q, si, UNIT, d) + ' (' + fu(q, si, otherU(), d) + ')'; }
+/* power: BTU/h in IP; kW (or W) in SI */
+function powIn(si, u) {
+  if (u === 'ip') return fmt(si * Q.pow.k, 0) + ' BTU/h';
+  return Math.abs(si) >= 1000 ? fmt(si / 1000, 2) + ' kW' : fmt(si, 0) + ' W';
+}
+function P(si) { return powIn(si, UNIT); }
+function Pd(si) { return powIn(si, UNIT) + ' (' + powIn(si, otherU()) + ')'; }
+function tons(w) { return w / 3516.85; }
+
+/* input plumbing: every input with data-q holds its value in display units;
+   data-c keeps the canonical SI number so switching units never drifts */
+var qInputs = [].slice.call(document.querySelectorAll('input[data-q]'));
+function v(id) {
+  var el = $(id);
+  if (el.getAttribute('data-q')) { var c = parseFloat(el.getAttribute('data-c')); return isFinite(c) ? c : 0; }
+  var x = parseFloat(el.value);
+  return isFinite(x) ? x : 0;
+}
+function has(id) { return isFinite(parseFloat($(id).value)); }
+function sel(id) { return parseFloat($(id).value); }
+function setC(id, c) {
+  var el = $(id); el.setAttribute('data-c', c);
+  el.value = fmtNum(toDisp(el.getAttribute('data-q'), c));
+}
+qInputs.forEach(function (el) {
+  el.addEventListener('input', function () {
+    var x = parseFloat(el.value);
+    el.setAttribute('data-c', isFinite(x) ? fromDisp(el.getAttribute('data-q'), x) : '');
+  });
+});
+function paintUnits() {
+  [].forEach.call(document.querySelectorAll('.u[data-q]'), function (e) { e.textContent = ul(e.getAttribute('data-q')); });
+  $('u-ip').setAttribute('aria-pressed', String(UNIT === 'ip'));
+  $('u-si').setAttribute('aria-pressed', String(UNIT === 'si'));
+}
+function fillInputs() {
+  qInputs.forEach(function (el) {
+    var c = parseFloat(el.getAttribute('data-c'));
+    el.value = isFinite(c) ? fmtNum(toDisp(el.getAttribute('data-q'), c)) : '';
+  });
+}
+function setUnits(u) {
+  UNIT = u;
+  try { localStorage.setItem('hpfg-units', u); } catch (e) {}
+  paintUnits(); fillInputs();
+  if (typeof calcAll === 'function') calcAll();
+}
+var savedUnits = null;
+try { savedUnits = localStorage.getItem('hpfg-units'); } catch (e) {}
+UNIT = savedUnits === 'si' ? 'si' : 'ip';
+paintUnits(); fillInputs();
+$('u-ip').addEventListener('click', function () { setUnits('ip'); });
+$('u-si').addEventListener('click', function () { setUnits('si'); });
+
+
+/* ---------- navigation ---------- */
+var secs = [].slice.call(document.querySelectorAll('section.sec[data-nav]'));
+$('side').innerHTML = '<div class="lbl">Contents</div>' + secs.map(function (s) {
+  return '<a href="#' + s.id + '" data-t="' + s.id + '">' + s.getAttribute('data-nav') + '</a>';
+}).join('');
+$('chips').innerHTML = secs.map(function (s) {
+  return '<a href="#' + s.id + '" data-t="' + s.id + '">' + s.getAttribute('data-nav') + '</a>';
+}).join('');
+var navLinks = [].slice.call(document.querySelectorAll('#side a, #chips a'));
+var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+navLinks.forEach(function (a) {
+  a.addEventListener('click', function (e) {
+    var t = document.getElementById(a.getAttribute('data-t'));
+    if (t && t.scrollIntoView) { e.preventDefault(); t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
+  });
+});
+function markActive(id) {
+  navLinks.forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-t') === id); });
+  var chip = document.querySelector('#chips a.on');
+  if (chip && chip.scrollIntoView) { try { var box = $('chips'); box.scrollLeft = chip.offsetLeft - 24; } catch (e) {} }
+}
+if ('IntersectionObserver' in window) {
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) { if (en.isIntersecting) markActive(en.target.id); });
+  }, { rootMargin: '-15% 0px -75% 0px' });
+  secs.forEach(function (s) { io.observe(s); });
+}
+markActive(secs[0].id);
+
+var PT = {"R410A":{"t0":-40,"dt":2,"dew":[174.8,191.3,208.9,227.7,247.9,269.3,292.3,316.6,342.6,370.1,399.3,430.2,463.0,497.6,534.1,572.7,613.3,656.1,701.1,748.4,798.1,850.2,904.9,962.1,1022.1,1084.8,1150.4,1218.9,1290.4,1365.1,1442.9,1524.1,1608.6,1696.6,1788.2,1883.4,1982.4,2085.4,2192.3,2303.3,2418.6,2538.2,2662.4,2791.1,2924.6,3063.0,3206.5,3355.2,3509.4,3669.2,3834.8,4006.6,4184.8,4369.7],"bub":[175.5,192.0,209.6,228.5,248.7,270.3,293.3,317.8,343.8,371.4,400.7,431.7,464.6,499.3,535.9,574.6,615.4,658.3,703.4,750.9,800.7,853.0,907.8,965.3,1025.4,1088.3,1154.1,1222.8,1294.5,1369.4,1447.5,1528.8,1613.6,1701.8,1793.6,1889.1,1988.4,2091.6,2198.8,2310.1,2425.6,2545.5,2669.9,2798.8,2932.5,3071.1,3214.7,3363.5,3517.6,3677.3,3842.6,4014.0,4191.5,4375.4]},"R32":{"t0":-40,"dt":2,"dew":[177.4,194.1,212.0,231.1,251.6,273.4,296.7,321.6,348.0,376.0,405.8,437.3,470.7,506.0,543.3,582.6,624.1,667.9,713.9,762.3,813.1,866.5,922.5,981.1,1042.6,1106.9,1174.2,1244.5,1317.9,1394.6,1474.6,1557.9,1644.8,1735.3,1829.5,1927.5,2029.4,2135.3,2245.4,2359.7,2478.3,2601.4,2729.2,2861.6,2998.9,3141.2,3288.7,3441.5,3599.7,3763.5,3933.2,4108.9,4290.9,4479.3],"bub":[177.4,194.1,212.0,231.1,251.6,273.4,296.7,321.6,348.0,376.0,405.8,437.3,470.7,506.0,543.3,582.6,624.1,667.9,713.9,762.3,813.1,866.5,922.5,981.1,1042.6,1106.9,1174.2,1244.5,1317.9,1394.6,1474.6,1557.9,1644.8,1735.3,1829.5,1927.5,2029.4,2135.3,2245.4,2359.7,2478.3,2601.4,2729.2,2861.6,2998.9,3141.2,3288.7,3441.5,3599.7,3763.5,3933.2,4108.9,4290.9,4479.3]},"R454B":{"t0":-40,"dt":2,"dew":[159.6,174.7,190.8,208.1,226.5,246.2,267.2,289.6,313.4,338.7,365.5,393.9,424.0,455.8,489.4,524.9,562.2,601.6,643.1,686.6,732.4,780.5,830.9,883.7,939.0,997.0,1057.5,1120.8,1186.9,1256.0,1328.0,1403.1,1481.3,1562.8,1647.7,1736.0,1827.8,1923.3,2022.5,2125.6,2232.6,2343.8,2459.1,2578.7,2702.9,2831.6,2965.1,3103.4,3246.9],"bub":[169.0,184.8,201.7,219.9,239.2,259.9,281.9,305.4,330.3,356.7,384.8,414.5,445.9,479.1,514.2,551.2,590.2,631.3,674.4,719.8,767.4,817.4,869.8,924.6,982.0,1042.1,1104.9,1170.4,1238.8,1310.2,1384.6,1462.1,1542.8,1626.7,1714.1,1804.8,1899.2,1997.1,2098.8,2204.2,2313.6,2427.0,2544.5,2666.2,2792.2,2922.7,3057.7,3197.4,3341.8]},"R22":{"t0":-40,"dt":2,"dew":[105.2,115.4,126.3,138.0,150.5,163.9,178.2,193.4,209.7,227.0,245.3,264.8,285.4,307.3,330.4,354.8,380.5,407.7,436.3,466.4,498.0,531.2,566.1,602.6,640.9,680.9,722.9,766.7,812.4,860.2,910.0,961.9,1016.0,1072.4,1130.9,1191.9,1255.2,1321.0,1389.2,1460.1,1533.6,1609.8,1688.7,1770.4,1855.1,1942.7,2033.3,2127.0,2223.9,2324.0,2427.5,2534.3,2644.7,2758.6],"bub":[105.2,115.4,126.3,138.0,150.5,163.9,178.2,193.4,209.7,227.0,245.3,264.8,285.4,307.3,330.4,354.8,380.5,407.7,436.3,466.4,498.0,531.2,566.1,602.6,640.9,680.9,722.9,766.7,812.4,860.2,910.0,961.9,1016.0,1072.4,1130.9,1191.9,1255.2,1321.0,1389.2,1460.1,1533.6,1609.8,1688.7,1770.4,1855.1,1942.7,2033.3,2127.0,2223.9,2324.0,2427.5,2534.3,2644.7,2758.6]}};
+var RHO = { R410A: 976, R32: 893, R454B: 917, R22: 1129 };
+var KPA_PSI = 6.894757, ATM_PSI = 14.696;
+function tSatFromP(ref, kpa, which) {
+  var d = PT[ref], arr = d[which], n = arr.length;
+  if (!(kpa >= arr[0] && kpa <= arr[n - 1])) return NaN;
+  for (var i = 0; i < n - 1; i++) {
+    if (kpa >= arr[i] && kpa <= arr[i + 1]) {
+      var f = (Math.log(kpa) - Math.log(arr[i])) / (Math.log(arr[i + 1]) - Math.log(arr[i]));
+      return d.t0 + d.dt * (i + f);
+    }
+  }
+  return NaN;
+}
+function pSatFromT(ref, tc, which) {
+  var d = PT[ref], arr = d[which], n = arr.length;
+  var x = (tc - d.t0) / d.dt;
+  if (x < 0 || x > n - 1) return NaN;
+  var i = Math.min(n - 2, Math.floor(x)), f = x - i;
+  return Math.exp(Math.log(arr[i]) * (1 - f) + Math.log(arr[i + 1]) * f);
+}
+var REFNAME = { R410A: 'R-410A', R32: 'R-32', R454B: 'R-454B', R22: 'R-22' };
+
+
+/* =====================================================================
+   ASHRAE data and functions (all in SI)
+   ===================================================================== */
+/* ASHRAE clear-sky model monthly A (W/m2), B, C for the 21st of each month */
+var ATM_KPA = 101.325;
+var ABC = { 1: [1202, .141, .103], 2: [1187, .142, .104], 3: [1164, .149, .109], 4: [1130, .164, .120], 5: [1106, .177, .130], 6: [1092, .185, .137], 7: [1093, .186, .138], 8: [1107, .182, .134], 9: [1136, .165, .121], 10: [1166, .152, .111], 11: [1190, .144, .106], 12: [1204, .141, .103] };
+var CUM = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+/* ASHRAE design-day hourly percentage of daily range, hours 1 to 24 */
+var PCT = [87, 92, 96, 99, 100, 98, 93, 84, 71, 56, 39, 23, 11, 3, 0, 3, 10, 21, 34, 47, 58, 68, 76, 82];
+/* incidence-angle multiplier for clear double glazing (typical) */
+var IAM = [[0, 1.0], [40, .99], [50, .96], [60, .87], [70, .68], [80, .34], [90, 0]];
+function iam(th) {
+  for (var i = 0; i < IAM.length - 1; i++) {
+    var a = IAM[i], b = IAM[i + 1];
+    if (th <= b[0]) return a[1] + (b[1] - a[1]) * (th - a[0]) / (b[0] - a[0]);
+  }
+  return 0;
+}
+var HO = 17.0;   /* W/m2.K outdoor film coefficient for sol-air */
+var DR_HORIZ = 3.9;  /* K, longwave correction for horizontal surfaces */
+
+/* Hyland-Wexler saturation pressure over water (kPa), valid above 0 C */
+function pws(Tc) {
+  var T = Tc + 273.15;
+  return Math.exp(-5.8002206e3 / T + 1.3914993 - 4.8640239e-2 * T + 4.1764768e-5 * T * T - 1.4452093e-8 * T * T * T + 6.5459673 * Math.log(T)) / 1000;
+}
+function Wwb(Tdb, Twb) {
+  var P = 101.325, ws = 0.621945 * pws(Twb) / (P - pws(Twb));
+  return ((2501 - 2.326 * Twb) * ws - 1.006 * (Tdb - Twb)) / (2501 + 1.86 * Tdb - 4.186 * Twb);
+}
+function Wrh(T, rh) { var P = 101.325, pw = rh * pws(T); return 0.621945 * pw / (P - pw); }
+
+function solarAt(month, hr, lat, lon, tz) {
+  var n = CUM[month - 1] + 21;
+  var dec = 23.45 * Math.sin(2 * Math.PI * (284 + n) / 365) * Math.PI / 180;
+  var Bd = 2 * Math.PI * (n - 81) / 364;
+  var eot = 9.87 * Math.sin(2 * Bd) - 7.53 * Math.cos(Bd) - 1.5 * Math.sin(Bd);   /* minutes */
+  var st = hr + (eot + 4 * (lon - 15 * tz)) / 60;
+  var H = 15 * (st - 12) * Math.PI / 180, L = lat * Math.PI / 180;
+  var sinb = Math.sin(L) * Math.sin(dec) + Math.cos(L) * Math.cos(dec) * Math.cos(H);
+  if (sinb <= 0) return null;
+  var gs = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(L) - Math.tan(dec) * Math.cos(L));
+  var abc = ABC[month];
+  return { sinb: sinb, az: ((gs * 180 / Math.PI + 180) % 360 + 360) % 360, beta: Math.asin(sinb), edn: abc[0] * Math.exp(-abc[1] / sinb), C: abc[2] };
+}
+function surfIrr(sol, azWall, rho) {
+  var d = (sol.az - azWall) * Math.PI / 180;
+  var cost = Math.cos(sol.beta) * Math.cos(d);
+  var ED = sol.edn * Math.max(0, cost);
+  var Y = Math.max(0.45, 0.55 + 0.437 * cost + 0.313 * cost * cost);
+  var Ed = sol.C * Y * sol.edn;
+  var Er = sol.edn * (sol.C + sol.sinb) * rho * 0.5;
+  var th = cost > 0 ? Math.acos(Math.min(1, cost)) * 180 / Math.PI : 90;
+  return { ED: ED, Ed: Ed, Er: Er, Et: ED + Ed + Er, th: th };
+}
+
+/* ASHRAE Fundamentals ch. 16 infiltration coefficients */
+var CS = { 1: .000145, 2: .000290, 3: .000435 };
+var CW = { 1: [.000319, .000246, .000174, .000104, .000032], 2: [.000420, .000325, .000231, .000137, .000042], 3: [.000494, .000382, .000271, .000161, .000049] };
+function qInfil(AL, st, cls, dT, wind) { return AL * Math.sqrt(CS[st] * Math.abs(dT) + CW[st][cls - 1] * wind * wind); }   /* L/s, AL in cm2 */
+
+var COMP = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+function compass(az) { return COMP[Math.round((((az % 360) + 360) % 360) / 45) % 8]; }
+function pdv(w) { return UNIT === 'ip' ? w * Q.pow.k : w / 1000; }          /* watts to display power (BTU/h or kW) */
+function pdec(step) { return Math.abs(step - Math.round(step)) > 1e-9 ? 1 : 0; }
+function areaN(x) { return fmt(toDisp('area', x), UNIT === 'ip' ? 0 : 1); }
+function th(t, cls) { return '<th' + (cls ? ' class="' + cls + '"' : '') + '>' + t + '</th>'; }
+function td(t, cls) { return '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + t + '</td>'; }
+function barsHtml(parts, total, colour) {
+  return parts.map(function (p) {
+    var pct = total > 0 ? Math.max(0, p.q) / total * 100 : 0;
+    return '<div class="bar"><span>' + p.n + '</span><span class="t"><i style="width:' + pct.toFixed(1) + '%' + (colour ? ';background:' + colour : '') + '"></i></span><span class="p">' + P(p.q) + ' · ' + fmt(pct, 0) + '%</span></div>';
+  }).join('');
+}
+function hourLabel(h) { return (h < 10 ? '0' : '') + h + ':00'; }
+
+/* =====================================================================
+   Load and ventilation calculator
+   ===================================================================== */
+var LAST = null;
+var LAST_TSO = null;
+function calcLoad() {
+  var Two = v('L-two'), Twi = v('L-twi'), Tso = v('L-tso'), Twb = v('L-twb'), dr = v('L-dr'), Tsi = v('L-tsi'), rhi = v('L-rh') / 100;
+  var mon = sel('L-mon'), lat = v('L-lat'), lon = v('L-lon'), tz = v('L-tz'), rho = v('L-rho');
+  var Af = v('L-af'), h = v('L-h'), st = sel('L-st'), nbr = Math.max(1, Math.round(v('L-nbr'))), nocc = v('L-nocc'), qs = v('L-qs'), ql = v('L-ql'), qint = v('L-qint');
+  var Rw = v('L-rw'), aw = sel('L-aw'), Uwin = v('L-uwin'), shgc = v('L-shgc'), Rd = v('L-rd'), Ar = v('L-ar'), Rr = v('L-rr'), ar = sel('L-ar_abs'), Af2 = v('L-af2'), Rf = v('L-rf');
+  var ach50 = v('L-ach50'), cls = sel('L-cls'), wW = v('L-wwin'), wS = v('L-wsum'), cred = $('L-cred').value === 'yes', wsf = v('L-wsf');
+  var es = Math.min(1, Math.max(0, v('L-es') / 100)), el = Math.min(1, Math.max(0, v('L-el') / 100));
+  var i, names = [];
+  for (i = 1; i <= 4; i++) $('L-n' + i).textContent = compass(v('L-az' + i));
+
+  var vout = $('L-vout'), hout = $('L-hout'), cout = $('L-cout');
+  var clear = function () {
+    $('L-htbl').innerHTML = ''; $('L-hbars').innerHTML = ''; $('L-cchart').innerHTML = ''; $('L-ctbl').innerHTML = ''; $('L-cbars').innerHTML = ''; $('L-cnote').textContent = ''; hout.innerHTML = ''; cout.innerHTML = '';
+  };
+  if (!(Af > 0 && h > 0 && Rw > 0 && Rd > 0 && Rr > 0 && Rf > 0)) {
+    vout.innerHTML = '<p class="msg">Enter a floor area, ceiling height and insulation values above zero.</p>'; clear(); LAST = null; return;
+  }
+
+  /* ---- ventilation, ASHRAE 62.2 ---- */
+  var V = Af * h, Q50 = ach50 * V / 3600, Q4 = Q50 * Math.pow(4 / 50, 0.65), ELA = Q4 * Math.sqrt(1.2 / (2 * 4));   /* m2 */
+  var AL = ELA * 1e4;   /* cm2 */
+  var Qarea = 0.15 * Af, Qocc = 3.5 * (nbr + 1), Qtot = Qarea + Qocc;
+  var NL = 1000 * ELA / Af * Math.pow(st * h / 2.5, 0.4);
+  var Qcred = Math.min(NL * wsf * Af / 1.44, 2 / 3 * Qtot);
+  var Qfan = cred ? Qtot - Qcred : Qtot;
+  var vh = res('Whole-dwelling ventilation, Q<sub>tot</sub>', dual('flow', Qtot, [0, 1]));
+  vh += '<p class="note">0.15 L/s per m² &times; ' + fmt(Af, 0) + ' m² = ' + fmt(Qarea, 1) + ' L/s, plus 3.5 L/s &times; (' + nbr + ' bedrooms + 1) = ' + fmt(Qocc, 1) + ' L/s.</p>';
+  vh += res('Effective leakage area (4 Pa) from ' + fmt(ach50, 1) + ' ACH50', fmt(AL, 0) + ' cm² (' + fmt(AL / 6.4516, 0) + ' in²)');
+  vh += res('Normalized leakage, NL', fmt(NL, 3));
+  vh += res('Infiltration credit', cred ? dual('flow', Qcred, [0, 1]) : 'not applied');
+  vh += res('Required mechanical ventilation, Q<sub>fan</sub>', dual('flow', Qfan, [0, 1]), 'big', 'cold');
+  vh += res('Air changes per hour from Q<sub>fan</sub>', fmt(Qfan * 3.6 / V, 2) + ' ACH');
+  vh += res('Local exhaust, bathroom', UNIT === 'ip' ? '50 CFM intermittent or 20 CFM continuous (25 or 10 L/s)' : '25 L/s intermittent or 10 L/s continuous (50 or 20 CFM)');
+  vh += res('Local exhaust, kitchen', UNIT === 'ip' ? '100 CFM intermittent or 5 ACH continuous (50 L/s)' : '50 L/s intermittent or 5 ACH continuous (100 CFM)');
+  vout.innerHTML = vh;
+
+  /* ---- heating design load ---- */
+  var dT = Twi - Two;
+  var Uw = 1 / Rw, Ud = 1 / Rd, Ur = 1 / Rr, Uf = 1 / Rf;
+  var facs = [], sumG = 0, sumW = 0, sumD = 0, over = false;
+  for (i = 1; i <= 4; i++) {
+    var g = v('L-g' + i), w = v('L-w' + i), d = v('L-d' + i), az = v('L-az' + i);
+    if (w + d > g) over = true;
+    facs.push({ az: az, g: g, w: w, d: d, net: Math.max(0, g - w - d), name: compass(az) });
+    sumG += g; sumW += w; sumD += d;
+  }
+  if (dT <= 0) {
+    hout.innerHTML = '<p class="msg">The winter indoor temperature must be warmer than the outdoor design temperature.</p>';
+    $('L-htbl').innerHTML = ''; $('L-hbars').innerHTML = ''; LAST = null;
+  } else {
+    var parts = [], cond = 0, tot = 0;
+    facs.forEach(function (f) {
+      f.qh = (f.net * Uw + f.w * Uwin + f.d * Ud) * dT;
+      cond += f.qh; parts.push({ n: f.name + ' · ' + fmt(f.az, 0) + '°', q: f.qh });
+    });
+    var qRoof = Ar * Ur * dT, qFloor = Af2 * Uf * dT;
+    var Qi = qInfil(AL, st, cls, dT, wW);
+    var qInf = 1.23 * Qi * dT, qVent = 1.23 * Qfan * dT * (1 - es), qVentRaw = 1.23 * Qfan * dT;
+    parts.push({ n: 'Roof', q: qRoof }, { n: 'Floor', q: qFloor }, { n: 'Infiltration', q: qInf }, { n: 'Ventilation', q: qVent });
+    parts.forEach(function (p) { tot += p.q; });
+    var ho2 = res('Design heating load', Pd(tot), 'big');
+    ho2 += res('Per unit floor area', dual('wm2', tot / Af, 1));
+    ho2 += res('Design temperatures and difference', F('temp', Two, 0) + ' outdoor, ' + F('temp', Twi, 0) + ' indoor, ΔT ' + F('dt', dT, 0));
+    ho2 += res('Envelope conduction', Pd(cond + qRoof + qFloor));
+    ho2 += res('Infiltration at ' + dual('flow', Qi, [0, 1]), Pd(qInf));
+    ho2 += res('Ventilation after ' + fmt(es * 100, 0) + ' % sensible recovery (' + P(qVentRaw) + ' without)', Pd(qVent));
+    if (sumG > 0) ho2 += res('Window-to-wall ratio', fmt(sumW / sumG * 100, 0) + ' %');
+    if (over) ho2 += '<p class="msg">On at least one facade the windows and doors add up to more than the gross wall area. Net wall area is set to zero there.</p>';
+    hout.innerHTML = ho2;
+
+    var t = '<thead><tr>' + th('Component') + th('Azimuth', 'n') + th('Gross (' + ul('area') + ')', 'n') + th('Net wall', 'n') + th('Windows', 'n') + th('Doors', 'n') + th('Loss', 'n') + th('Share', 'n') + '</tr></thead><tbody>';
+    var pc = function (q) { return fmt(tot > 0 ? Math.max(0, q) / tot * 100 : 0, 0) + ' %'; };
+    facs.forEach(function (f) {
+      t += '<tr>' + td(f.name) + td(fmt(f.az, 0) + '°', 'n mono') + td(areaN(f.g), 'n mono') + td(areaN(f.net), 'n mono') + td(areaN(f.w), 'n mono') + td(areaN(f.d), 'n mono') + td(P(f.qh), 'n mono') + td(pc(f.qh), 'n mono') + '</tr>';
+    });
+    t += '<tr>' + td('Roof / ceiling') + td('', 'n') + td(areaN(Ar), 'n mono') + td('', 'n') + td('', 'n') + td('', 'n') + td(P(qRoof), 'n mono') + td(pc(qRoof), 'n mono') + '</tr>';
+    t += '<tr>' + td('Foundation / floor') + td('', 'n') + td(areaN(Af2), 'n mono') + td('', 'n') + td('', 'n') + td('', 'n') + td(P(qFloor), 'n mono') + td(pc(qFloor), 'n mono') + '</tr>';
+    t += '<tr>' + td('Infiltration') + td('', 'n') + td('', 'n') + td('', 'n') + td('', 'n') + td('', 'n') + td(P(qInf), 'n mono') + td(pc(qInf), 'n mono') + '</tr>';
+    t += '<tr>' + td('Ventilation') + td('', 'n') + td('', 'n') + td('', 'n') + td('', 'n') + td('', 'n') + td(P(qVent), 'n mono') + td(pc(qVent), 'n mono') + '</tr>';
+    t += '<tr>' + td('<b>Total</b>') + td('', 'n') + td('<b>' + areaN(sumG) + '</b>', 'n mono') + td('', 'n') + td('<b>' + areaN(sumW) + '</b>', 'n mono') + td('<b>' + areaN(sumD) + '</b>', 'n mono') + td('<b>' + P(tot) + '</b>', 'n mono') + td('', 'n') + '</tr></tbody>';
+    $('L-htbl').innerHTML = t;
+    $('L-hbars').innerHTML = barsHtml(parts, tot);
+    LAST = { heat: tot, Two: Two, Twi: Twi };
+  }
+  LAST_TSO = Tso;
+
+  /* ---- cooling, hour by hour ---- */
+  var Wo = Wwb(Tso, Twb), Wi = Wrh(Tsi, rhi);
+  var hrs = [], rows = [], best = null, k;
+  for (var hr = 8; hr <= 20; hr++) {
+    var To = Tso - dr * PCT[hr - 1] / 100;
+    var sol = solarAt(mon, hr, lat, lon, tz);
+    var fr = facs.map(function (f) {
+      var s = sol ? surfIrr(sol, f.az, rho) : { ED: 0, Ed: 0, Er: 0, Et: 0, th: 90 };
+      var Tsa = To + aw * s.Et / HO;
+      var o = {
+        wall: f.net * Uw * (Tsa - Tsi),
+        sol: f.w * (s.ED * shgc * iam(s.th) + (s.Ed + s.Er) * shgc * 0.87),
+        wc: f.w * Uwin * (To - Tsi),
+        door: f.d * Ud * (To - Tsi)
+      };
+      o.tot = o.wall + o.sol + o.wc + o.door;
+      return o;
+    });
+    var Etr = sol ? sol.edn * sol.sinb + sol.C * sol.edn : 0;
+    var qroof = Ar * Ur * (To + ar * Etr / HO - DR_HORIZ - Tsi);
+    var Qic = qInfil(AL, st, cls, Math.max(Math.abs(To - Tsi), 0.5), wS);
+    var qinf = 1.23 * Qic * (To - Tsi), qvent = 1.23 * Qfan * (To - Tsi) * (1 - es);
+    var qintl = nocc * qs + qint;
+    var sens = qroof + qinf + qvent + qintl, ws = 0, wc = 0, wd = 0, wl = 0;
+    fr.forEach(function (o) { sens += o.tot; ws += o.sol; wc += o.wc; wd += o.door; wl += o.wall; });
+    var latq = 3010 * (Qic + Qfan * (1 - el)) * Math.max(0, Wo - Wi) + nocc * ql;
+    var row = { hr: hr, To: To, fr: fr, roof: qroof, inf: qinf, vent: qvent, intl: qintl, sens: sens, lat: latq, tot: sens + latq, wsol: ws, wcond: wc, door: wd, wall: wl, Qi: Qic };
+    rows.push(row); hrs.push(hr);
+    if (!best || row.tot > best.tot) best = row;
+  }
+  var pk = best;
+  if (LAST) LAST.cool = pk.tot;
+  var co = res('Estimated peak cooling load', Pd(pk.tot), 'big', 'cold');
+  co += res('In tons of cooling', fmt(tons(pk.tot), 2) + ' tons');
+  co += res('Peak hour', hourLabel(pk.hr) + ' local standard time, ' + F('temp', pk.To, 1) + ' outdoors');
+  co += res('Sensible', Pd(pk.sens));
+  co += res('Latent', Pd(pk.lat));
+  co += res('Sensible heat ratio', fmt(pk.tot > 0 ? pk.sens / pk.tot : 0, 2));
+  co += res('Per unit floor area', dual('wm2', pk.tot / Af, 1));
+  co += res('Humidity ratio, outdoor design / indoor', UNIT === 'ip' ? fmt(Wo * 7000, 0) + ' / ' + fmt(Wi * 7000, 0) + ' gr/lb (' + fmt(Wo * 1000, 1) + ' / ' + fmt(Wi * 1000, 1) + ' g/kg)' : fmt(Wo * 1000, 1) + ' / ' + fmt(Wi * 1000, 1) + ' g/kg (' + fmt(Wo * 7000, 0) + ' / ' + fmt(Wi * 7000, 0) + ' gr/lb)');
+  cout.innerHTML = co;
+
+  /* orientation table at the peak hour */
+  var ct = '<thead><tr>' + th('Facade') + th('Windows (' + ul('area') + ')', 'n') + th('Window solar', 'n') + th('Window cond.', 'n') + th('Wall and door', 'n') + th('Total', 'n') + th('Peak hour', 'n') + '</tr></thead><tbody>';
+  var bigSol = { q: -1, n: '' };
+  facs.forEach(function (f, j) {
+    var o = pk.fr[j], own = rows[0], ownV = -1e9;
+    rows.forEach(function (rw) { if (rw.fr[j].tot > ownV) { ownV = rw.fr[j].tot; own = rw; } });
+    if (o.sol > bigSol.q) bigSol = { q: o.sol, n: f.name };
+    ct += '<tr>' + td(f.name + ' · ' + fmt(f.az, 0) + '°') + td(areaN(f.w), 'n mono') + td(P(o.sol), 'n mono') + td(P(o.wc), 'n mono') + td(P(o.wall + o.door), 'n mono') + td(P(o.tot), 'n mono') + td(hourLabel(own.hr), 'n mono') + '</tr>';
+  });
+  var row5 = function (label, q) { return '<tr><td colspan="5">' + label + '</td>' + td(P(q), 'n mono') + td('', 'n') + '</tr>'; };
+  ct += row5('Roof / ceiling', pk.roof) + row5('Infiltration (sensible)', pk.inf) + row5('Ventilation after recovery (sensible)', pk.vent) + row5('People and appliances (sensible)', pk.intl);
+  ct += row5('<b>Sensible total</b>', pk.sens) + row5('Latent (people and outdoor air)', pk.lat) + row5('<b>Total at peak</b>', pk.tot) + '</tbody>';
+  $('L-ctbl').innerHTML = ct;
+
+  var cparts = [
+    { n: 'Window solar', q: pk.wsol }, { n: 'Window conduction', q: pk.wcond }, { n: 'Walls', q: pk.wall }, { n: 'Doors', q: pk.door }, { n: 'Roof', q: pk.roof },
+    { n: 'Infiltration', q: pk.inf }, { n: 'Ventilation', q: pk.vent }, { n: 'People, appliances', q: pk.intl }, { n: 'Latent', q: pk.lat }
+  ];
+  $('L-cbars').innerHTML = barsHtml(cparts, pk.tot, 'var(--cold)');
+
+  /* chart: total and sensible against hour */
+  var W = 640, H = 280, Lm = 62, Rm = 16, Tp = 16, Bm = 40;
+  var vals = []; rows.forEach(function (rw) { vals.push(pdv(rw.tot), pdv(rw.sens)); });
+  var ymax = Math.max.apply(null, vals), ymin = Math.min(0, Math.min.apply(null, vals));
+  var step = niceStep(Math.max(ymax - ymin, 1e-6), 5), y1 = Math.ceil(ymax * 1.05 / step) * step, y0 = Math.floor(ymin / step) * step;
+  var X = function (x) { return Lm + (x - 8) / 12 * (W - Lm - Rm); };
+  var Y = function (q) { return Tp + (1 - (q - y0) / (y1 - y0)) * (H - Tp - Bm); };
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Estimated cooling load by hour of the design day, with the peak marked">';
+  var dec = pdec(step);
+  for (var q = y0; q <= y1 + step * 0.01; q += step) {
+    s += '<line x1="' + Lm + '" x2="' + (W - Rm) + '" y1="' + Y(q) + '" y2="' + Y(q) + '" style="stroke:var(--line)" stroke-width="1"/>';
+    s += '<text x="' + (Lm - 8) + '" y="' + (Y(q) + 4) + '" text-anchor="end" font-size="11" font-family="IBM Plex Mono, monospace" style="fill:var(--muted)">' + fmt(q, dec) + '</text>';
+  }
+  for (k = 8; k <= 20; k += 2) {
+    s += '<line x1="' + X(k) + '" x2="' + X(k) + '" y1="' + Y(y0) + '" y2="' + (Y(y0) + 4) + '" style="stroke:var(--muted)" stroke-width="1"/>';
+    s += '<text x="' + X(k) + '" y="' + (Y(y0) + 17) + '" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" style="fill:var(--muted)">' + hourLabel(k) + '</text>';
+  }
+  s += '<text x="' + ((Lm + W - Rm) / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="12" font-family="IBM Plex Sans, sans-serif" style="fill:var(--muted)">Hour of day, local standard time</text>';
+  s += '<text x="' + Lm + '" y="' + (Tp - 4) + '" font-size="11" font-family="IBM Plex Mono, monospace" style="fill:var(--muted)">' + (UNIT === 'ip' ? 'BTU/h' : 'kW') + '</text>';
+  var line = function (key, colour) {
+    var d = '';
+    rows.forEach(function (rw, j) { d += (j ? ' L' : 'M') + X(rw.hr) + ',' + Y(pdv(rw[key])); });
+    return '<path d="' + d + '" fill="none" style="stroke:' + colour + '" stroke-width="2.5"/>';
+  };
+  s += line('sens', 'var(--heat)') + line('tot', 'var(--cold)');
+  var px = X(pk.hr), py = Y(pdv(pk.tot));
+  s += '<circle cx="' + px + '" cy="' + py + '" r="6" style="fill:var(--panel);stroke:var(--ink)" stroke-width="2"/>';
+  var rightSide = px > W * 0.62;
+  s += '<text x="' + (rightSide ? px - 10 : px + 10) + '" y="' + (py - 8) + '" text-anchor="' + (rightSide ? 'end' : 'start') + '" font-size="12" font-weight="600" font-family="IBM Plex Sans, sans-serif" style="fill:var(--ink)">peak ' + hourLabel(pk.hr) + '</text>';
+  s += '</svg>';
+  $('L-cchart').innerHTML = '<div class="legend"><span><i style="background:var(--cold)"></i>Total (sensible + latent)</span><span><i style="background:var(--heat)"></i>Sensible only</span></div>' + s;
+
+  $('L-cnote').textContent = 'Design day: the 21st of ' + $('L-mon').options[$('L-mon').selectedIndex].text + ' at ' + fmt(lat, 1) + '° N. ' + (bigSol.q > 0 ? 'The largest window solar gain at the peak hour is on the ' + bigSol.n + ' facade. ' : '') + 'This is an instantaneous estimate without thermal storage, not the ASHRAE RLF or RHB result. Check it with approved software before sizing final equipment.';
+}
+
+function sendLoad() {
+  if (!LAST) return;
+  setC('b-q', LAST.heat); setC('b-td', LAST.Two); setC('b-ti', LAST.Twi);
+  calcBal();
+}
+
+/* =====================================================================
+   Equipment sizing: balance point
+   ===================================================================== */
+function getPts() {
+  var pts = [];
+  for (var i = 1; i <= 4; i++) {
+    if (has('b-t' + i) && has('b-c' + i)) pts.push({ t: v('b-t' + i), c: v('b-c' + i) });
+  }
+  pts.sort(function (a, b) { return a.t - b.t; });
+  for (var j = pts.length - 1; j > 0; j--) { if (pts[j].t === pts[j - 1].t) pts.splice(j, 1); }
+  return pts;
+}
+function capAt(pts, T) {
+  var n = pts.length, y;
+  if (T <= pts[0].t) y = pts[0].c + (pts[1].c - pts[0].c) / (pts[1].t - pts[0].t) * (T - pts[0].t);
+  else if (T >= pts[n - 1].t) y = pts[n - 1].c + (pts[n - 1].c - pts[n - 2].c) / (pts[n - 1].t - pts[n - 2].t) * (T - pts[n - 1].t);
+  else {
+    y = pts[n - 1].c;
+    for (var i = 0; i < n - 1; i++) {
+      if (T >= pts[i].t && T <= pts[i + 1].t) { y = pts[i].c + (pts[i + 1].c - pts[i].c) * (T - pts[i].t) / (pts[i + 1].t - pts[i].t); break; }
+    }
+  }
+  return Math.max(0, y);
+}
+var BALT = null;
+function calcBal() {
+  var Qd = v('b-q'), Td = v('b-td'), Ti = v('b-ti'), pts = getPts();
+  var out = $('b-out'), ch = $('b-chart');
+  if (pts.length < 2 || Ti <= Td || Qd <= 0) {
+    out.innerHTML = '<p class="msg">Enter a design load, a design temperature colder than the setpoint, and at least two capacity points with different temperatures.</p>';
+    ch.innerHTML = ''; BALT = null; return;
+  }
+  var load = function (T) { return Math.max(0, Qd * (Ti - T) / (Ti - Td)); };
+  var bal = null, prevT = Ti, prevD = capAt(pts, Ti) - load(Ti);
+  for (var T = Ti - 0.1; T >= Td - 0.0001; T -= 0.1) {
+    var d = capAt(pts, T) - load(T);
+    if (d < 0) { bal = prevT + (T - prevT) * (prevD / (prevD - d)); break; }
+    prevT = T; prevD = d;
+  }
+  var capD = capAt(pts, Td), backup = Math.max(0, Qd - capD);
+  BALT = bal;
+  var html = '';
+  html += res('Thermal balance point', bal !== null ? dual('temp', bal, 1) : 'none above design temperature', 'big', 'cold');
+  html += res('Heat pump capacity at design temp', Pd(capD));
+  html += res('Design load', Pd(Qd));
+  html += res('Backup heat needed at design temp', Pd(backup), 'big');
+  html += res('Share of design load covered', fmt(Math.min(100, capD / Qd * 100), 0) + ' %');
+  if (Td < pts[0].t) html += '<p class="note">The design temperature is colder than your coldest data point, so capacity there is extrapolated. Get real data for that temperature.</p>';
+  out.innerHTML = html;
+
+  /* chart: geometry in SI, tick labels in the chosen units */
+  var minT = pts[0].t, maxT = pts[pts.length - 1].t;
+  var x0 = Math.floor((Math.min(Td, minT) - 2) / 5) * 5;
+  var x1 = Math.min(Ti, Math.ceil(Math.max(maxT, 0) / 5) * 5 + 5);
+  if (x1 <= x0) x1 = x0 + 10;
+  var yMaxRaw = 0, k;
+  for (k = 0; k <= 60; k++) { var tt = x0 + (x1 - x0) * k / 60; yMaxRaw = Math.max(yMaxRaw, capAt(pts, tt), load(tt)); }
+  var ymD = pdv(yMaxRaw), step = niceStep(ymD, 5), y1 = Math.ceil(ymD * 1.05 / step) * step;
+  var W = 640, H = 300, L = 62, R = 16, Tp = 14, B = 40;
+  var X = function (t) { return L + (t - x0) / (x1 - x0) * (W - L - R); };
+  var Yd = function (qd) { return Tp + (1 - qd / y1) * (H - Tp - B); };
+  var Y = function (q) { return Yd(pdv(q)); };
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Chart of heat pump maximum capacity and building load against outdoor temperature">';
+  var q, dec = pdec(step);
+  for (q = 0; q <= y1 + step * 0.01; q += step) {
+    s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Yd(q) + '" y2="' + Yd(q) + '" style="stroke:var(--line)" stroke-width="1"/>';
+    s += '<text x="' + (L - 8) + '" y="' + (Yd(q) + 4) + '" text-anchor="end" font-size="11" font-family="IBM Plex Mono, monospace" style="fill:var(--muted)">' + fmt(q, dec) + '</text>';
+  }
+  var d0 = toDisp('temp', x0), d1 = toDisp('temp', x1), tstep = UNIT === 'ip' ? 10 : 5;
+  for (var t = Math.ceil(d0 / tstep) * tstep; t <= d1 + 1e-6; t += tstep) {
+    var xt = X(fromDisp('temp', t));
+    s += '<line x1="' + xt + '" x2="' + xt + '" y1="' + Yd(0) + '" y2="' + (Yd(0) + 4) + '" style="stroke:var(--muted)" stroke-width="1"/>';
+    s += '<text x="' + xt + '" y="' + (Yd(0) + 17) + '" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" style="fill:var(--muted)">' + t + '</text>';
+  }
+  s += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="12" font-family="IBM Plex Sans, sans-serif" style="fill:var(--muted)">Outdoor temperature (' + ul('temp') + ')</text>';
+  s += '<text x="' + L + '" y="' + (Tp - 3) + '" font-size="11" font-family="IBM Plex Mono, monospace" style="fill:var(--muted)">' + (UNIT === 'ip' ? 'BTU/h' : 'kW') + '</text>';
+  if (bal !== null && bal > x0) {
+    var top = '', bot = '', n = 40;
+    for (k = 0; k <= n; k++) { var tk = x0 + (bal - x0) * k / n; top += (k ? ' L' : 'M') + X(tk) + ',' + Y(load(tk)); }
+    for (k = n; k >= 0; k--) { var tb = x0 + (bal - x0) * k / n; bot += ' L' + X(tb) + ',' + Y(capAt(pts, tb)); }
+    s += '<path d="' + top + bot + ' Z" style="fill:var(--heat)" fill-opacity="0.18" stroke="none"/>';
+  }
+  s += '<line x1="' + X(Td) + '" x2="' + X(Td) + '" y1="' + Yd(0) + '" y2="' + Tp + '" style="stroke:var(--muted)" stroke-width="1" stroke-dasharray="3 4"/>';
+  s += '<text x="' + (X(Td) + 5) + '" y="' + (Tp + 12) + '" font-size="11" font-family="IBM Plex Sans, sans-serif" style="fill:var(--muted)">design ' + fmt(toDisp('temp', Td), 0) + ' ' + ul('temp') + '</text>';
+  s += '<line x1="' + X(x0) + '" y1="' + Y(load(x0)) + '" x2="' + X(x1) + '" y2="' + Y(load(x1)) + '" style="stroke:var(--heat)" stroke-width="2.5"/>';
+  var poly = 'M' + X(x0) + ',' + Y(capAt(pts, x0));
+  pts.forEach(function (p) { if (p.t > x0 && p.t < x1) poly += ' L' + X(p.t) + ',' + Y(p.c); });
+  poly += ' L' + X(x1) + ',' + Y(capAt(pts, x1));
+  s += '<path d="' + poly + '" fill="none" style="stroke:var(--cold)" stroke-width="2.5"/>';
+  pts.forEach(function (p) {
+    if (p.t >= x0 && p.t <= x1) s += '<circle cx="' + X(p.t) + '" cy="' + Y(p.c) + '" r="4" style="fill:var(--cold)"/>';
+  });
+  if (bal !== null) {
+    var bx = X(bal), by = Y(load(bal));
+    s += '<line x1="' + bx + '" x2="' + bx + '" y1="' + by + '" y2="' + Yd(0) + '" style="stroke:var(--ink)" stroke-width="1" stroke-dasharray="3 3"/>';
+    s += '<circle cx="' + bx + '" cy="' + by + '" r="6" style="fill:var(--panel);stroke:var(--ink)" stroke-width="2"/>';
+    var right = bx > (W * 0.62);
+    s += '<text x="' + (right ? bx - 8 : bx + 8) + '" y="' + (Yd(0) - 8) + '" text-anchor="' + (right ? 'end' : 'start') + '" font-size="12" font-weight="600" font-family="IBM Plex Sans, sans-serif" style="fill:var(--ink)">balance ' + fmt(toDisp('temp', bal), 1) + ' ' + ul('temp') + '</text>';
+  }
+  s += '</svg>';
+  ch.innerHTML = '<div class="legend"><span><i style="background:var(--cold)"></i>Heat pump max capacity</span><span><i style="background:var(--heat)"></i>Building load</span>' + (bal !== null ? '<span><i style="background:var(--heat);opacity:.25"></i>Backup heat needed</span>' : '') + '</div>' + s;
+}
+
+/* ---------- efficiency and cost ---------- */
+function perEnergy(perKwh) {
+  var gj = '$' + fmt(perKwh * 277.78, 0) + ' per GJ', mm = '$' + fmt(perKwh * 293.07, 0) + ' per million BTU';
+  return '$' + fmt(perKwh, 3) + ' per kWh of heat (' + (UNIT === 'ip' ? mm + '; ' + gj : gj + '; ' + mm) + ')';
+}
+function calcEff() {
+  var cop1 = v('x-hspf') / 3.412, cop2 = v('x-seer') / 3.412, cop = v('x-cop'), el = v('x-el');
+  var kwhU = v('x-kwh'), fp = v('x-fp'), eff = v('x-eff') / 100;
+  var html = '';
+  html += res('Seasonal heating COP from HSPF2', fmt(cop1, 2));
+  html += res('Seasonal cooling COP from SEER2', fmt(cop2, 2));
+  if (cop > 0 && el > 0) {
+    html += res('Heat pump cost of heat at COP ' + fmt(cop, 1), perEnergy(el / cop));
+    html += res('Electric resistance heat, for comparison', perEnergy(el));
+  }
+  if (kwhU > 0 && fp > 0 && eff > 0 && el > 0) {
+    var fuelKwh = fp / (kwhU * eff);
+    html += res('Fuel-fired heat', perEnergy(fuelKwh));
+    var be = el / fuelKwh;
+    html += res('Break-even COP versus the fuel', fmt(be, 2), 'big', 'cold');
+    if (cop > 0) html += '<p class="note">' + (cop > be ? 'At COP ' + fmt(cop, 1) + ' the heat pump is cheaper to run than the fuel.' : 'At COP ' + fmt(cop, 1) + ' the fuel is cheaper to run. Below the break-even COP, switch to the fuel-fired backup (economic balance point).') + '</p>';
+  }
+  $('x-out').innerHTML = html;
+}
+$('x-fuel').addEventListener('change', function () { var val = parseFloat($('x-fuel').value); if (val !== 1) $('x-kwh').value = val; calcEff(); });
+
+/* ---------- ducts ---------- */
+function calcDuct1() {
+  var q = v('d-q'), dt = v('d-dt'), kw = v('d-tons'), cpk = v('d-cpt');
+  var html = '';
+  if (q > 0 && dt > 0) html += res('Heating airflow', dual('flow', q / (1.23 * dt), [0, 0]), 'big');
+  if (kw > 0 && cpk > 0) html += res('Cooling airflow', dual('flow', kw * cpk, [0, 0]));
+  $('d-out').innerHTML = html;
+}
+function calcFR() {
+  var avail = v('f-esp') - v('f-filter') - v('f-grill') - v('f-other'), tel = v('f-tel');
+  var html = res('Static pressure left for ducts', dual('pa', avail, [2, 0]));
+  if (avail > 0 && tel > 0) {
+    html += res('Friction rate', dual('fr', avail / tel, [3, 2]), 'big');
+  } else {
+    html += '<p class="msg">Nothing is left for the ducts. Lower the component drops, shorten the run, or use equipment with more ESP.</p>';
+  }
+  $('f-out').innerHTML = html;
+}
+function rectEquiv(a, b) { return 1.30 * Math.pow(a * b, 0.625) / Math.pow(a + b, 0.25); }
+function calcSizer() {
+  var qs = v('s-cfm'), frs = v('s-fr'), bmm = v('s-b');
+  if (!(qs > 0 && frs > 0)) { $('s-out').innerHTML = '<p class="msg">Enter an airflow and a friction rate above zero.</p>'; return; }
+  /* ASHRAE friction-loss equation in its inch-pound form: dp[in.wg/100ft] = 0.109136 Q[cfm]^1.9 / D[in]^5.02 */
+  var q = qs * Q.flow.k, fr = frs * Q.fr.k, b = bmm / 25.4;
+  var D = Math.pow(0.109136 * Math.pow(q, 1.9) / fr, 1 / 5.02);
+  var velSI = function (dIn) { var dm = dIn * 0.0254; return (qs / 1000) / (Math.PI * dm * dm / 4); };
+  var Dmm = D * 25.4;
+  var Dsmm = UNIT === 'ip' ? Math.ceil(D - 1e-9) * 25.4 : Math.ceil(Dmm / 25 - 1e-9) * 25;
+  var html = res('Round duct diameter', dual('mm', Dmm, [1, 0]), 'big');
+  html += res(UNIT === 'ip' ? 'Next whole-inch round size up' : 'Next 25 mm round size up', dual('mm', Dsmm, [0, 0]) + ', ' + dual('vel', velSI(Dsmm / 25.4), [0, 1]));
+  html += res('Velocity at the exact diameter', dual('vel', velSI(D), [0, 1]));
+  if (b > 0) {
+    var lo = 0.1, hi = 400, mid;
+    for (var i = 0; i < 80; i++) { mid = (lo + hi) / 2; if (rectEquiv(mid, b) < D) lo = mid; else hi = mid; }
+    var a = (lo + hi) / 2, ar = Math.max(a, b) / Math.min(a, b);
+    var aMm = UNIT === 'ip' ? Math.ceil(a * 2) / 2 * 25.4 : Math.ceil(a * 25.4 / 10) * 10;
+    html += res('Equivalent rectangle', F('mm', aMm, [1, 0]) + ' × ' + F('mm', bmm, [0, 0]), 'big', 'cold');
+    html += res('Rectangle velocity', dual('vel', (qs / 1000) / (a * b * 0.0254 * 0.0254), [0, 1]));
+    html += res('Aspect ratio', fmt(ar, 1) + ' : 1');
+    if (ar > 4) html += '<p class="msg">Aspect ratio above 4:1. Use a squarer duct if space allows.</p>';
+  }
+  $('s-out').innerHTML = html;
+}
+
+/* ---------- refrigerant workbench ---------- */
+function calcSHSC() {
+  var ref = $('p-ref').value;
+  var ps = v('p-ps'), ts = v('p-ts'), pl = v('p-pl'), tl = v('p-tl');
+  var tsatS = tSatFromP(ref, ps + ATM_KPA, 'dew'), tsatL = tSatFromP(ref, pl + ATM_KPA, 'bub');
+  var html = '';
+  if (isFinite(tsatS)) {
+    html += res('Evaporating (dew) temperature', dual('temp', tsatS, 1));
+    html += res('Superheat', dual('dt', ts - tsatS, 1), 'big');
+  } else html += '<p class="msg">The suction pressure is outside the table range for ' + REFNAME[ref] + '.</p>';
+  if (isFinite(tsatL)) {
+    html += res('Condensing (bubble) temperature', dual('temp', tsatL, 1));
+    html += res('Subcooling', dual('dt', tsatL - tl, 1), 'big', 'cold');
+  } else html += '<p class="msg">The liquid pressure is outside the table range for ' + REFNAME[ref] + '.</p>';
+  if (ps + ATM_KPA > 0) html += res('Pressure ratio (absolute)', fmt((pl + ATM_KPA) / (ps + ATM_KPA), 2));
+  $('p-out').innerHTML = html;
+}
+function calcLift() {
+  var ref = $('l-ref').value, up = $('l-dir').value === 'up';
+  var lift = v('l-lift'), fric = v('l-fric'), tc = v('l-tc'), sc = v('l-sc');
+  var perM = RHO[ref] * 9.80665 / 1000;   /* kPa per m of liquid column */
+  var stat = perM * lift * (up ? 1 : -1);
+  var dP = stat + fric;
+  var pc = pSatFromT(ref, tc, 'bub');
+  var html = res('Static head per unit of lift', dual('kpm', perM, [3, 2]));
+  html += res('Static head over ' + F('len', lift, [0, 1]), dual('kpa', stat, 1));
+  html += res('Total pressure change along the liquid line', dual('kpa', dP, 1));
+  if (isFinite(pc)) {
+    var tNew = tSatFromP(ref, pc - dP, 'bub');
+    if (isFinite(tNew)) {
+      var dTeq = tc - tNew, rem = sc - dTeq;
+      html += res('Equivalent saturation-temperature drop', dual('dt', dTeq, 1));
+      html += res('Subcooling left at the metering device', dual('dt', rem, 1), 'big', rem < 5 / 3 ? '' : 'cold');
+      if (rem <= 0) html += '<p class="msg">No subcooling left: expect flash gas before the metering device. Reduce lift or friction, shorten the run, or check the manufacturer’s limit.</p>';
+      else if (rem < 5 / 3) html += '<p class="msg">The margin is thin. Small changes in load or charge could cause flash gas.</p>';
+    } else html += '<p class="msg">The resulting pressure is outside the table range.</p>';
+  } else html += '<p class="msg">The condensing temperature is outside the table range for ' + REFNAME[ref] + '.</p>';
+  $('l-out').innerHTML = html;
+}
+function calcCharge() {
+  var len = v('c-len'), std = v('c-std'), rate = v('c-oz');
+  var extraLen = Math.max(0, len - std), g = extraLen * rate;
+  var oz = g / 28.3495, lb = g / 453.592;
+  var html = res('Extra length beyond factory charge', dual('len', extraLen, [0, 1]));
+  html += res('Added charge', UNIT === 'ip' ? fmt(oz, 1) + ' oz (' + fmt(lb, 2) + ' lb, ' + fmt(g, 0) + ' g)' : fmt(g, 0) + ' g (' + fmt(oz, 1) + ' oz, ' + fmt(lb, 2) + ' lb)', 'big');
+  $('c-out').innerHTML = html;
+}
+
+/* ---------- thermistor ---------- */
+function calcNtc() {
+  var r25 = v('t-r25'), B = v('t-b'), r = v('t-r'), tc = v('t-tc');
+  var html = '';
+  if (r25 > 0 && B > 0 && r > 0) {
+    var T = 1 / (1 / 298.15 + Math.log(r / r25) / B) - 273.15;
+    html += res('Temperature from resistance', dual('temp', T, 1), 'big', 'cold');
+  }
+  if (r25 > 0 && B > 0 && has('t-tc')) {
+    var R = r25 * Math.exp(B * (1 / (tc + 273.15) - 1 / 298.15));
+    html += res('Resistance at ' + F('temp', tc, 1), fmt(R, 0) + ' Ω', 'big');
+  }
+  $('t-out').innerHTML = html;
+}
+
+/* =====================================================================
+   Selecting and sizing an ASHP (NRCan guide, Steps 4 and 5)
+   ===================================================================== */
+var C_17F = (17 - 32) / 1.8;    /* -8.333 C, the guide's rated cold point */
+var C_60F = (60 - 32) / 1.8;    /* 15.556 C, the guide's zero-load reference */
+function calcTarget() {
+  var opt = $('sel-opt').value, dhl = v('sel-dhl'), tdh = v('sel-tdh'), dcl = v('sel-dcl'), tdc = v('sel-tdc');
+  var out = $('sel-out'), html = '';
+  if (opt === '4A' || opt === '4B') {
+    if (!(dcl > 0)) { out.innerHTML = '<p class="msg">Enter a design cooling load above zero.</p>'; return; }
+    var lo = 0.80 * dcl, hi = 1.25 * dcl;
+    html += res('Target cooling capacity range at ' + F('temp', tdc, 0), Pd(lo) + ' &ndash; ' + Pd(hi), 'big', 'cold');
+    html += res('Equation 3', '0.80 &times; DCL to 1.25 &times; DCL');
+    html += opt === '4A'
+      ? '<p class="note">Option 4A, emphasis on cooling: match a single-stage unit near the low-to-middle of this range. For staged or variable-capacity equipment, match high-stage cooling output to the range.</p>'
+      : '<p class="note">Option 4B, balanced: match a single-stage unit near the high end (100&ndash;125% of DCL). With two-stage or variable-capacity equipment, also try to bring low-stage cooling output into this range without exceeding the 125% ceiling.</p>';
+  } else if (opt === '4C') {
+    if (!(dhl > 0 && tdh < C_60F)) { out.innerHTML = '<p class="msg">Enter a design heating load and a design heating temperature colder than 60 °F (15.6 °C).</p>'; return; }
+    var tc17 = dhl * (C_60F - C_17F) / (C_60F - tdh);
+    html += res('Target heating capacity at 17 °F (&minus;8.3 °C)', Pd(tc17), 'big', 'cold');
+    html += res('Equation 4', 'DHL &times; 43 / (60 &minus; design temp, °F)');
+    html += '<p class="note">Option 4C, emphasis on heating: select equipment with heating output at 17 °F (&minus;8.3 °C) close to, or a little above, this target. A cold-climate ASHP is usually needed.</p>';
+  } else {
+    if (!(dhl > 0)) { out.innerHTML = '<p class="msg">Enter a design heating load above zero.</p>'; return; }
+    html += res('Target heating capacity at ' + F('temp', tdh, 0) + ' (design temperature)', Pd(dhl), 'big', 'cold');
+    html += res('Equation 5', 'Target capacity = DHL');
+    html += '<p class="note">Option 4D, sized to the design heating load: select equipment with heating output at the design temperature at or above this target. A cold-climate ASHP is normally required in most Canadian climate zones, and existing duct airflow capacity may limit this option in a retrofit.</p>';
+  }
+  out.innerHTML = html;
+}
+function calcTurndown() {
+  var mx = v('td-max'), mn = v('td-min'), out = $('td-out');
+  if (!(mx > 0 && mn > 0 && mx > mn)) { out.innerHTML = '<p class="msg">Enter a maximum and a minimum capacity, with maximum greater than minimum, at the same outdoor temperature.</p>'; return; }
+  var ratio = mx / mn;
+  var html = res('Turn-down ratio', fmt(ratio, 2) + ' : 1', 'big', 'cold');
+  html += ratio >= 2 ? '<p class="note">2:1 or better. The unit should modulate down through most of the shoulder season without short-cycling.</p>'
+    : ratio >= 1.5 ? '<p class="note">Moderate turn-down. Expect some cycling in mild weather, especially if the unit is sized toward the higher end of its target range.</p>'
+    : '<p class="note">Low turn-down ratio. Expect cycling for much of the heating season unless the unit is sized conservatively relative to the load.</p>';
+  out.innerHTML = html;
+}
+/* fraction of total annual heating above an outdoor temperature, by NRCan climate zone;
+   approximate, digitized from the guide's Figure 22 [outdoor temp °F, % of annual heating] */
+var HEATFRAC = {
+  marine:    [[-10, 100], [0, 100], [10, 100], [20, 99], [30, 96], [35, 90], [40, 75], [45, 50], [50, 25], [55, 8], [60, 2]],
+  colddry:   [[-10, 99], [0, 96], [10, 90], [20, 80], [30, 65], [40, 45], [50, 22], [60, 5]],
+  coldhumid: [[-10, 99], [0, 97], [10, 90], [15, 72], [21, 64], [28, 48], [33, 33], [40, 18], [50, 6], [60, 1]],
+  verycold:  [[-10, 92], [0, 83], [10, 70], [20, 55], [30, 38], [40, 22], [50, 9], [60, 2]],
+  subarctic: [[-10, 75], [0, 63], [10, 53], [15, 45], [20, 40], [30, 26], [40, 14], [50, 5], [60, 1]]
+};
+function interpPct(zone, tC) {
+  var f = tC * 1.8 + 32, pts = HEATFRAC[zone];
+  if (f <= pts[0][0]) return pts[0][1];
+  if (f >= pts[pts.length - 1][0]) return pts[pts.length - 1][1];
+  for (var i = 0; i < pts.length - 1; i++) {
+    if (f >= pts[i][0] && f <= pts[i + 1][0]) return pts[i][1] + (pts[i + 1][1] - pts[i][1]) * (f - pts[i][0]) / (pts[i + 1][0] - pts[i][0]);
+  }
+  return pts[pts.length - 1][1];
+}
+var ZONENAME = { marine: 'Marine', colddry: 'Cold-Dry', coldhumid: 'Cold-Humid', verycold: 'Very-Cold', subarctic: 'Subarctic' };
+function calcHeatFrac() {
+  var out = $('hf-out');
+  if (!has('hf-bpt')) { out.innerHTML = '<p class="msg">Enter a thermal balance point, or use the value from the balance-point calculator below.</p>'; return; }
+  var t = v('hf-bpt'), zone = $('hf-zone').value, pct = interpPct(zone, t);
+  var html = res('Estimated annual heating above ' + F('temp', t, 0) + ', ' + ZONENAME[zone] + ' zone', fmt(pct, 0) + ' %', 'big', 'cold');
+  html += res('Backup heat covers the remaining', fmt(100 - pct, 0) + ' % of annual heating (by degree-hours, not by peak load)');
+  html += '<p class="note">Approximate, digitized from the guide\'s Figure 22. Confirm against the guide\'s chart, a local climate file, or HOT2000 before finalizing a design.</p>';
+  out.innerHTML = html;
+}
+
+/* ---------- wiring ---------- */
+function calcAll() {
+  calcLoad(); calcBal(); calcEff(); calcDuct1(); calcFR(); calcSizer();
+  calcSHSC(); calcLift(); calcCharge(); calcNtc();
+  calcTarget(); calcTurndown(); calcHeatFrac();
+}
+[].forEach.call(document.querySelectorAll('#calc-load input, #calc-load select'), function (el) {
+  el.addEventListener('input', calcLoad); el.addEventListener('change', calcLoad);
+});
+on(['b-q', 'b-td', 'b-ti', 'b-t1', 'b-t2', 'b-t3', 'b-t4', 'b-c1', 'b-c2', 'b-c3', 'b-c4'], calcBal);
+on(['x-hspf', 'x-seer', 'x-cop', 'x-el', 'x-kwh', 'x-fp', 'x-eff'], calcEff);
+on(['d-q', 'd-dt', 'd-tons', 'd-cpt'], calcDuct1);
+on(['f-esp', 'f-filter', 'f-grill', 'f-other', 'f-tel'], calcFR);
+on(['s-cfm', 's-fr', 's-b'], calcSizer);
+on(['p-ref', 'p-ps', 'p-ts', 'p-pl', 'p-tl'], calcSHSC);
+on(['l-ref', 'l-dir', 'l-lift', 'l-fric', 'l-tc', 'l-sc'], calcLift);
+on(['c-len', 'c-std', 'c-oz'], calcCharge);
+on(['t-r25', 't-b', 't-r', 't-tc'], calcNtc);
+on(['sel-opt', 'sel-dhl', 'sel-tdh', 'sel-dcl', 'sel-tdc'], calcTarget);
+on(['td-max', 'td-min'], calcTurndown);
+on(['hf-bpt', 'hf-zone'], calcHeatFrac);
+$('L-send').addEventListener('click', sendLoad);
+$('b-use').addEventListener('click', sendLoad);
+$('sel-use').addEventListener('click', function () {
+  if (!LAST) return;
+  setC('sel-dhl', LAST.heat); setC('sel-tdh', LAST.Two);
+  if (LAST.cool != null && LAST_TSO != null) { setC('sel-dcl', LAST.cool); setC('sel-tdc', LAST_TSO); }
+  calcTarget();
+});
+$('hf-use').addEventListener('click', function () {
+  if (BALT === null) return;
+  setC('hf-bpt', BALT); calcHeatFrac();
+});
+$('f-send').addEventListener('click', function () {
+  var avail = v('f-esp') - v('f-filter') - v('f-grill') - v('f-other'), tel = v('f-tel');
+  if (avail > 0 && tel > 0) { setC('s-fr', avail / tel); calcSizer(); }
+});
+calcAll();
+
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
