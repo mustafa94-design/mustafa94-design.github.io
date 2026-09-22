@@ -47,6 +47,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   background: var(--bg);
   color: var(--ink);
@@ -238,6 +239,60 @@ footer p { max-width: 80ch; }
 <div class="shell">
 <nav class="side" id="side" aria-label="Sections"></nav>
 <main>
+
+<!-- ===================== QUICK ===================== -->
+<section class="sec" id="quick" data-nav="Quick estimate">
+  <p class="eyebrow">Rule of thumb &middot; floor area only</p>
+  <h2>Quick estimate</h2>
+<div class="calc" id="calc-quick">
+    <h3>Airflow and load, from floor area alone</h3>
+    <p class="hint">A fast gut-check from conditioned floor area and a single BTU/h&middot;ft&sup2; factor &mdash; for a quick site visit or a first pass before a proper survey. Not a substitute for the <a href="#load">load and ventilation calculator</a> below.</p>
+    <div class="grid">
+      <div class="field"><label for="q-area">Conditioned floor area (<span class="u" data-q="area"></span>)</label><input id="q-area" type="number" inputmode="decimal" data-q="area" data-c="140"></div>
+      <div class="field"><label for="q-mode">Equipment does</label>
+        <select id="q-mode">
+          <option value="both" selected>Cooling + heating</option>
+          <option value="cool">Cooling only</option>
+          <option value="heat">Heating only</option>
+        </select>
+      </div>
+      <div class="field"><label for="q-tight">Construction / climate severity</label>
+        <select id="q-tight">
+          <option value="tight">Tight, high-efficiency</option>
+          <option value="avg" selected>Average existing house</option>
+          <option value="leaky">Older, leaky, poorly insulated</option>
+        </select>
+      </div>
+      <div class="field"><label for="q-cpk">Airflow per ton (<span class="u" data-q="cpk"></span>)</label><input id="q-cpk" type="number" inputmode="decimal" data-q="cpk" data-c="53.68"></div>
+    </div>
+    <div class="grid">
+      <div class="field"><label for="q-coolf">Cooling factor (<span class="u" data-q="wm2"></span>)</label><input id="q-coolf" type="number" inputmode="decimal" data-q="wm2" data-c="75.71"></div>
+      <div class="field"><label for="q-heatf">Heating factor (<span class="u" data-q="wm2"></span>)</label><input id="q-heatf" type="number" inputmode="decimal" data-q="wm2" data-c="110.41"></div>
+    </div>
+    <p class="note">The construction/climate preset fills in typical cooling and heating factors. Both stay editable &mdash; changing either by hand overrides the preset.</p>
+
+    <div class="grid" id="q-auxrow">
+      <div class="field"><label for="q-aux">Auxiliary / backup heat</label>
+        <select id="q-aux">
+          <option value="none">None</option>
+          <option value="with" selected>With auxiliary heater</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid" id="q-auxfields">
+      <div class="field"><label for="q-auxtype">Auxiliary heat source</label>
+        <select id="q-auxtype">
+          <option value="elec" selected>Electric resistance</option>
+          <option value="furnace">Fossil-fuel furnace (dual-fuel)</option>
+        </select>
+      </div>
+      <div class="field"><label for="q-auxpct">Backup covers (% of design heating load)</label><input id="q-auxpct" type="number" inputmode="decimal" value="100" min="0" max="100"></div>
+      <div class="field" id="q-afuefield"><label for="q-afue">Furnace AFUE (%)</label><input id="q-afue" type="number" inputmode="decimal" value="95" min="0" max="100"></div>
+    </div>
+
+    <div class="results" id="q-out" aria-live="polite"></div>
+  </div>
+</section>
 
 <!-- ===================== LOAD ===================== -->
 <section class="sec" id="load" data-nav="Load and ventilation">
@@ -1221,8 +1276,61 @@ function calcHeatFrac() {
   out.innerHTML = html;
 }
 
+/* ---------- quick estimate (area-only rule of thumb) ---------- */
+var QPRESET = { tight: [56.78, 78.87], avg: [75.71, 110.41], leaky: [94.64, 141.93] };
+function qUpdateVis() {
+  var mode = $('q-mode').value, wantHeat = mode !== 'cool';
+  $('q-auxrow').hidden = !wantHeat;
+  var showAux = wantHeat && $('q-aux').value === 'with';
+  $('q-auxfields').hidden = !showAux;
+  if (showAux) $('q-afuefield').hidden = ($('q-auxtype').value !== 'furnace');
+}
+function calcQuick() {
+  qUpdateVis();
+  var out = $('q-out'), area = v('q-area');
+  if (!(area > 0)) { out.innerHTML = '<p class="msg">Enter a floor area above zero.</p>'; return; }
+  var mode = $('q-mode').value, wantCool = mode !== 'heat', wantHeat = mode !== 'cool';
+  var coolF = v('q-coolf'), heatF = v('q-heatf'), cpk = v('q-cpk');
+  var coolW = wantCool ? area * coolF : 0, heatW = wantHeat ? area * heatF : 0;
+  var html = '';
+  if (wantCool) {
+    html += res('Cooling load (design)', Pd(coolW), 'big', 'cold');
+    html += res('Nominal cooling capacity', fmt(tons(coolW), 2) + ' tons (' + fmt(coolW / 1000, 1) + ' kW)');
+  }
+  if (wantHeat) {
+    html += res('Heating load (design)', Pd(heatW), 'big');
+    html += res('Nominal heating capacity', fmt(tons(heatW), 2) + ' tons (' + fmt(heatW / 1000, 1) + ' kW)');
+  }
+  var equipW = Math.max(coolW, heatW);
+  if (equipW > 0 && cpk > 0) html += res('Estimated system airflow', dual('flow', (equipW / 1000) * cpk, [0, 0]), 'big', 'cold');
+  if (wantHeat && heatW > 0 && $('q-aux').value === 'with') {
+    var pct = parseFloat($('q-auxpct').value); pct = isFinite(pct) ? Math.max(0, Math.min(100, pct)) : 100;
+    var auxW = heatW * pct / 100;
+    if ($('q-auxtype').value === 'furnace') {
+      var afue = parseFloat($('q-afue').value); afue = (isFinite(afue) && afue > 0) ? afue / 100 : 0.95;
+      var inputW = auxW / afue, inputBtuh = inputW * Q.pow.k;
+      var stdBtu = [40000, 60000, 80000, 100000, 120000, 150000], pickBtu = null;
+      for (var i = 0; i < stdBtu.length; i++) { if (stdBtu[i] >= inputBtuh) { pickBtu = stdBtu[i]; break; } }
+      if (pickBtu === null) pickBtu = stdBtu[stdBtu.length - 1];
+      html += res('Furnace input needed, at ' + fmt(afue * 100, 0) + '% AFUE', Pd(inputW), 'big');
+      html += res('Nearest common furnace size', fmt(pickBtu, 0) + ' BTU/h input');
+    } else {
+      var kw = auxW / 1000;
+      var stdKw = [3, 5, 7.5, 8, 10, 12, 15, 17.5, 20, 25], pickKw = null;
+      for (var j = 0; j < stdKw.length; j++) { if (stdKw[j] >= kw) { pickKw = stdKw[j]; break; } }
+      if (pickKw === null) pickKw = stdKw[stdKw.length - 1];
+      html += res('Electric auxiliary heater needed', fmt(kw, 1) + ' kW', 'big');
+      html += res('Nearest common heater size', fmt(pickKw, 1) + ' kW');
+    }
+    html += '<p class="note">Backup sized to ' + fmt(pct, 0) + '% of the design heating load' + (pct >= 99.5 ? ', i.e. full redundant capacity below the balance point.' : ' &mdash; confirm the heat pump alone covers the rest at the design outdoor temperature.') + '</p>';
+  }
+  html += '<p class="note">Rule of thumb only, from floor area and a single BTU/h&middot;ft&sup2; factor. Use the <a href="#load">load and ventilation calculator</a> for a real room-by-room load, especially for high glazing, additions, or unusual envelopes.</p>';
+  out.innerHTML = html;
+}
+
 /* ---------- wiring ---------- */
 function calcAll() {
+  calcQuick();
   calcLoad(); calcBal(); calcEff(); calcDuct1(); calcFR(); calcSizer();
   calcSHSC(); calcLift(); calcCharge(); calcNtc();
   calcTarget(); calcTurndown(); calcHeatFrac();
@@ -1242,6 +1350,12 @@ on(['t-r25', 't-b', 't-r', 't-tc'], calcNtc);
 on(['sel-opt', 'sel-dhl', 'sel-tdh', 'sel-dcl', 'sel-tdc'], calcTarget);
 on(['td-max', 'td-min'], calcTurndown);
 on(['hf-bpt', 'hf-zone'], calcHeatFrac);
+on(['q-area', 'q-mode', 'q-coolf', 'q-heatf', 'q-cpk', 'q-aux', 'q-auxtype', 'q-auxpct', 'q-afue'], calcQuick);
+$('q-tight').addEventListener('change', function () {
+  var p = QPRESET[$('q-tight').value];
+  if (p) { setC('q-coolf', p[0]); setC('q-heatf', p[1]); }
+  calcQuick();
+});
 $('L-send').addEventListener('click', sendLoad);
 $('b-use').addEventListener('click', sendLoad);
 $('sel-use').addEventListener('click', function () {
