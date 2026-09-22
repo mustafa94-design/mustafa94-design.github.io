@@ -310,8 +310,9 @@ footer p { max-width: 80ch; }
     <p class="hint">Every value is an example house near Fredericton, NB. Replace them with project data. Changes update all results below instantly. Use the IP / SI switch at the top of the page to change units.</p>
 
     <h4>1. Design conditions</h4>
+    <div class="grid"><div class="field"><label for="L-city">City (auto-fill climate data)</label><select id="L-city"><option value="">&mdash; Manual / other location &mdash;</option><option value="halifax">Halifax, NS</option><option value="sydney">Sydney, NS</option><option value="saintjohn">Saint John, NB</option><option value="moncton">Moncton, NB</option><option value="fredericton">Fredericton, NB</option><option value="charlottetown">Charlottetown, PE</option><option value="summerside">Summerside, PE</option><option value="stjohns">St. John&#39;s, NL</option><option value="cornerbrook">Corner Brook, NL</option></select></div></div>
     <div class="grid"><div class="field"><label for="L-two">Winter outdoor design temp (<span class="u" data-q="temp"></span>)</label><input id="L-two" type="number" inputmode="decimal" data-q="temp" data-c="-25"></div><div class="field"><label for="L-twi">Winter indoor temp (<span class="u" data-q="temp"></span>)</label><input id="L-twi" type="number" inputmode="decimal" data-q="temp" data-c="21"></div><div class="field"><label for="L-tso">Summer outdoor dry-bulb (design) (<span class="u" data-q="temp"></span>)</label><input id="L-tso" type="number" inputmode="decimal" data-q="temp" data-c="28"></div><div class="field"><label for="L-twb">Coincident wet-bulb (<span class="u" data-q="temp"></span>)</label><input id="L-twb" type="number" inputmode="decimal" data-q="temp" data-c="20"></div><div class="field"><label for="L-dr">Daily temperature range (<span class="u" data-q="dt"></span>)</label><input id="L-dr" type="number" inputmode="decimal" data-q="dt" data-c="10"></div><div class="field"><label for="L-tsi">Summer indoor dry-bulb (<span class="u" data-q="temp"></span>)</label><input id="L-tsi" type="number" inputmode="decimal" data-q="temp" data-c="24"></div><div class="field"><label for="L-rh">Summer indoor RH (%)</label><input id="L-rh" type="number" inputmode="decimal" value="50"></div><div class="field"><label for="L-mon">Design month</label><select id="L-mon"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7" selected>July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div><div class="field"><label for="L-lat">Latitude (°N)</label><input id="L-lat" type="number" inputmode="decimal" step="0.1" value="45.9"></div><div class="field"><label for="L-lon">Longitude (°, west negative)</label><input id="L-lon" type="number" inputmode="decimal" step="0.1" value="-66.6"></div><div class="field"><label for="L-tz">UTC offset, standard time (h)</label><input id="L-tz" type="number" inputmode="decimal" value="-4"></div><div class="field"><label for="L-rho">Ground reflectance</label><input id="L-rho" type="number" inputmode="decimal" step="0.05" value="0.2"></div></div>
-    <p class="note">Take design temperatures from ASHRAE climatic design data (the Weather Data Viewer) or the project specification: winter 99.6 % or 99 % dry-bulb, summer 0.4 % or 1 % dry-bulb with mean coincident wet-bulb, and mean daily range. The values shown are placeholders, not Fredericton data.</p>
+    <p class="note">Take design temperatures from ASHRAE climatic design data (the Weather Data Viewer) or the project specification: winter 99.6 % or 99 % dry-bulb, summer 0.4 % or 1 % dry-bulb with mean coincident wet-bulb, and mean daily range. The values shown are placeholders, not Fredericton data. Picking a city above fills in an approximate ASHRAE/NBC-style design temperature, wet-bulb, daily range, latitude, longitude and time zone (and the degree-days used in the energy-modeling calculator) for that city&#39;s airport or reference station &mdash; confirm against current ASHRAE/NBC climatic data before finalizing a design. Loads calculated below now flow automatically into the balance-point, target-capacity, duct-sizing and energy-modeling calculators further down the page; any field you edit there stays as your own what-if until you change something in this calculator again.</p>
 
     <h4>2. Building</h4>
     <div class="grid"><div class="field"><label for="L-af">Conditioned floor area (<span class="u" data-q="area"></span>)</label><input id="L-af" type="number" inputmode="decimal" data-q="area" data-c="140"></div><div class="field"><label for="L-h">Ceiling height (<span class="u" data-q="len"></span>)</label><input id="L-h" type="number" inputmode="decimal" data-q="len" data-c="2.4384"></div><div class="field"><label for="L-st">Storeys above grade</label><select id="L-st"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></div><div class="field"><label for="L-nbr">Bedrooms</label><input id="L-nbr" type="number" inputmode="decimal" value="3"></div><div class="field"><label for="L-nocc">Occupants (cooling)</label><input id="L-nocc" type="number" inputmode="decimal" value="4"></div><div class="field"><label for="L-qs">Sensible gain per person (<span class="u" data-q="pow"></span>)</label><input id="L-qs" type="number" inputmode="decimal" data-q="pow" data-c="75"></div><div class="field"><label for="L-ql">Latent gain per person (<span class="u" data-q="pow"></span>)</label><input id="L-ql" type="number" inputmode="decimal" data-q="pow" data-c="55"></div><div class="field"><label for="L-qint">Lighting and appliances (sensible) (<span class="u" data-q="pow"></span>)</label><input id="L-qint" type="number" inputmode="decimal" data-q="pow" data-c="400"></div></div>
@@ -348,7 +349,7 @@ footer p { max-width: 80ch; }
   <h2>Selecting an ASHP</h2>
 <div class="calc" id="calc-target">
     <h3>Target capacity (Equations 3&ndash;5)</h3>
-    <p class="hint">Defaults match the guide's own worked example: 49,600 BTU/h heating at &minus;4&nbsp;&deg;F, 23,600 BTU/h cooling at 88&nbsp;&deg;F.</p>
+    <p class="hint">Defaults match the guide's own worked example: 49,600 BTU/h heating at &minus;4&nbsp;&deg;F, 23,600 BTU/h cooling at 88&nbsp;&deg;F. These fields auto-fill from the load and ventilation calculator above &mdash; edit them freely as a what-if; they re-sync only when that calculator's inputs change again.</p>
     <div class="grid">
       <div class="field"><label for="sel-opt">Sizing option</label>
         <select id="sel-opt">
@@ -377,7 +378,7 @@ footer p { max-width: 80ch; }
   </div>
 <div class="calc" id="calc-heatfrac">
     <h3>Fraction of annual heating above the balance point</h3>
-    <p class="hint">Approximate, digitized from the guide's Figure 22. For a specific project, read the value from the guide's chart, your local climate file, or a HOT2000 run.</p>
+    <p class="hint">Approximate, digitized from the guide's Figure 22. For a specific project, read the value from the guide's chart, your local climate file, or a HOT2000 run. The balance point auto-fills from the calculator below &mdash; edit it freely as a what-if; it re-syncs only when that calculator's inputs change again.</p>
     <div class="grid">
       <div class="field"><label for="hf-bpt">Thermal balance point (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="-2" id="hf-bpt" type="number" inputmode="decimal"></div>
       <div class="field"><label for="hf-zone">Climate zone</label>
@@ -401,7 +402,7 @@ footer p { max-width: 80ch; }
   <h2>Equipment sizing</h2>
 <div class="calc" id="calc-bal">
     <h3>Balance point and backup heat</h3>
-    <p class="hint">Enter the heat pump's maximum capacity at several outdoor temperatures from the manufacturer's performance table. The four capacity points below are illustrative, not a real model.</p>
+    <p class="hint">Enter the heat pump's maximum capacity at several outdoor temperatures from the manufacturer's performance table. The four capacity points below are illustrative, not a real model. The design load and temperatures auto-fill from the load and ventilation calculator above &mdash; edit them freely as a what-if; they re-sync only when that calculator's inputs change again.</p>
     <div class="grid">
       <div class="field"><label for="b-q">Design heating load (<span class="u" data-q="pow"></span>)</label><input data-q="pow" data-c="7326.8" id="b-q" type="number" inputmode="decimal"></div>
       <div class="field"><label for="b-td">Design outdoor temp (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="-25" id="b-td" type="number" inputmode="decimal"></div>
@@ -436,6 +437,22 @@ footer p { max-width: 80ch; }
     <div class="results" id="x-out" aria-live="polite"></div>
     <p class="note">Energy per unit: oil about 38.2 MJ/L, propane about 25.3 MJ/L, natural gas about 37.7 MJ/m&sup3;. Confirm current values and prices before quoting.</p>
     <p class="note">Selecting natural gas fills in Liberty Utilities&#39; New Brunswick residential rate &mdash; delivery plus gas supply, about $0.84/m&sup3;, effective September 1, 2026, excluding the $22.50/month customer charge. The supply portion is market-based and changes monthly, so confirm the current rate at naturalgasnb.com before quoting.</p>
+  </div>
+</section>
+
+<!-- ===================== ENERGY MODELING ===================== -->
+<section class="sec" id="energy" data-nav="Energy modeling">
+  <p class="eyebrow">Degree-day estimate &middot; annual cost &middot; savings vs. the previous system</p>
+  <h2>Energy modeling</h2>
+<div class="calc" id="calc-energy">
+    <h3>Annual heating energy and cost: heat pump vs. the previous system</h3>
+    <p class="hint">Heating only &mdash; cooling energy and cost are not estimated. Reuses the design load and temperatures (balance-point calculator), the balance point and climate zone (heating-fraction calculator), and the HSPF2, electricity price, and fuel price/efficiency (efficiency and cost calculator), all above. The previous system is modeled as that same fuel-fired appliance, covering the whole heating season. Only the two fields below are entered directly.</p>
+    <div class="grid">
+      <div class="field"><label for="e-hdd">Annual heating degree-days, base 18 &deg;C (&deg;C&middot;days)</label><input id="e-hdd" type="number" inputmode="decimal" step="10" value="4470"></div>
+      <div class="field"><label for="e-backup">New system&#39;s backup heat, below the balance point</label>
+        <select id="e-backup"><option value="elec" selected>Electric resistance</option><option value="fuel">Keep the previous fuel system (dual-fuel)</option></select></div>
+    </div>
+    <div class="results" id="e-out" aria-live="polite"></div>
   </div>
 </section>
 
@@ -972,12 +989,41 @@ function calcLoad() {
   $('L-cchart').innerHTML = '<div class="legend"><span><i style="background:var(--cold)"></i>Total (sensible + latent)</span><span><i style="background:var(--heat)"></i>Sensible only</span></div>' + s;
 
   $('L-cnote').textContent = 'Design day: the 21st of ' + $('L-mon').options[$('L-mon').selectedIndex].text + ' at ' + fmt(lat, 1) + '° N. ' + (bigSol.q > 0 ? 'The largest window solar gain at the peak hour is on the ' + bigSol.n + ' facade. ' : '') + 'This is an instantaneous estimate without thermal storage, not the ASHRAE RLF or RHB result. Check it with approved software before sizing final equipment.';
+  sendLoad();
 }
 
+/* Atlantic Canada climate design data, approximate ASHRAE/NBC-style values by
+   city/airport station: winter design dry-bulb (two), summer design dry-bulb
+   (tso), mean coincident wet-bulb (twb), mean daily range (dr), latitude,
+   longitude (west negative), standard-time UTC offset (tz), and annual
+   heating degree-days base 18°C (hdd), all SI. Confirm against current
+   ASHRAE/NBC data before finalizing a design. */
+var CITY_DATA = {
+  halifax:       { two: -20.6, tso: 26.1, twb: 20.0, dr: 9.3,  lat: 44.88, lon: -63.52, tz: -4,   hdd: 3786 },
+  sydney:        { two: -20.6, tso: 25.6, twb: 18.9, dr: 8.8,  lat: 46.17, lon: -60.05, tz: -4,   hdd: 4280 },
+  saintjohn:     { two: -20.0, tso: 26.7, twb: 20.0, dr: 9.7,  lat: 45.32, lon: -65.89, tz: -4,   hdd: 4546 },
+  moncton:       { two: -21.1, tso: 28.9, twb: 21.1, dr: 10.6, lat: 46.10, lon: -64.69, tz: -4,   hdd: 4454 },
+  fredericton:   { two: -20.6, tso: 30.0, twb: 21.7, dr: 11.2, lat: 45.87, lon: -66.53, tz: -4,   hdd: 4470 },
+  charlottetown: { two: -21.7, tso: 26.7, twb: 20.0, dr: 8.3,  lat: 46.29, lon: -63.13, tz: -4,   hdd: 4370 },
+  summerside:    { two: -22.2, tso: 26.7, twb: 20.0, dr: 8.0,  lat: 46.44, lon: -63.84, tz: -4,   hdd: 4337 },
+  stjohns:       { two: -18.9, tso: 23.3, twb: 17.8, dr: 7.8,  lat: 47.62, lon: -52.74, tz: -3.5, hdd: 4540 },
+  cornerbrook:   { two: -20.6, tso: 25.0, twb: 18.9, dr: 9.4,  lat: 48.93, lon: -57.92, tz: -3.5, hdd: 4758 }
+};
+function applyCity() {
+  var key = $('L-city').value, d = CITY_DATA[key];
+  if (!d) return;
+  setC('L-two', d.two); setC('L-tso', d.tso); setC('L-twb', d.twb); setC('L-dr', d.dr);
+  $('L-lat').value = d.lat; $('L-lon').value = d.lon; $('L-tz').value = d.tz;
+  $('e-hdd').value = d.hdd;
+  calcLoad();
+}
 function sendLoad() {
   if (!LAST) return;
   setC('b-q', LAST.heat); setC('b-td', LAST.Two); setC('b-ti', LAST.Twi);
-  calcBal();
+  setC('sel-dhl', LAST.heat); setC('sel-tdh', LAST.Two);
+  if (LAST.cool != null && LAST_TSO != null) { setC('sel-dcl', LAST.cool); setC('sel-tdc', LAST_TSO); }
+  setC('d-q', LAST.heat);
+  calcBal(); calcTarget(); calcDuct1();
 }
 
 /* =====================================================================
@@ -1081,6 +1127,7 @@ function calcBal() {
   }
   s += '</svg>';
   ch.innerHTML = '<div class="legend"><span><i style="background:var(--cold)"></i>Heat pump max capacity</span><span><i style="background:var(--heat)"></i>Building load</span>' + (bal !== null ? '<span><i style="background:var(--heat);opacity:.25"></i>Backup heat needed</span>' : '') + '</div>' + s;
+  if (BALT !== null) { setC('hf-bpt', BALT); calcHeatFrac(); }
 }
 
 /* ---------- efficiency and cost ---------- */
@@ -1106,6 +1153,7 @@ function calcEff() {
     if (cop > 0) html += '<p class="note">' + (cop > be ? 'At COP ' + fmt(cop, 1) + ' the heat pump is cheaper to run than the fuel.' : 'At COP ' + fmt(cop, 1) + ' the fuel is cheaper to run. Below the break-even COP, switch to the fuel-fired backup (economic balance point).') + '</p>';
   }
   $('x-out').innerHTML = html;
+  calcEnergy();
 }
 var FUEL_PRICE_DEFAULT = { '10.5': 0.84 }; /* natural gas, NB (Liberty Utilities): delivery + supply, $/m3, effective Sep 1 2026 */
 $('x-fuel').addEventListener('change', function () {
@@ -1285,11 +1333,47 @@ function interpPct(zone, tC) {
 var ZONENAME = { marine: 'Marine', colddry: 'Cold-Dry', coldhumid: 'Cold-Humid', verycold: 'Very-Cold', subarctic: 'Subarctic' };
 function calcHeatFrac() {
   var out = $('hf-out');
-  if (!has('hf-bpt')) { out.innerHTML = '<p class="msg">Enter a thermal balance point, or use the value from the balance-point calculator below.</p>'; return; }
+  if (!has('hf-bpt')) { out.innerHTML = '<p class="msg">Enter a thermal balance point, or use the value from the balance-point calculator below.</p>'; calcEnergy(); return; }
   var t = v('hf-bpt'), zone = $('hf-zone').value, pct = interpPct(zone, t);
   var html = res('Estimated annual heating above ' + F('temp', t, 0) + ', ' + ZONENAME[zone] + ' zone', fmt(pct, 0) + ' %', 'big', 'cold');
   html += res('Backup heat covers the remaining', fmt(100 - pct, 0) + ' % of annual heating (by degree-hours, not by peak load)');
   html += '<p class="note">Approximate, digitized from the guide\'s Figure 22. Confirm against the guide\'s chart, a local climate file, or HOT2000 before finalizing a design.</p>';
+  out.innerHTML = html;
+  calcEnergy();
+}
+/* ---------- energy modeling: degree-day estimate vs. the previous system ---------- */
+function calcEnergy() {
+  var out = $('e-out');
+  if (!out) return;
+  var Qd = v('b-q'), Td = v('b-td'), Ti = v('b-ti'), hdd = v('e-hdd');
+  if (!(Qd > 0 && Ti > Td)) { out.innerHTML = '<p class="msg">Enter a design load and indoor/outdoor design temperatures in the balance-point calculator above.</p>'; return; }
+  if (!(hdd > 0)) { out.innerHTML = '<p class="msg">Enter annual heating degree-days below, or pick a city in the load and ventilation calculator to fill it in automatically.</p>'; return; }
+  if (!has('hf-bpt')) { out.innerHTML = '<p class="msg">Enter a thermal balance point in the heating-fraction calculator above (or use its "Use the balance point" button) so the season can be split between the heat pump and backup heat.</p>'; return; }
+  var bpt = v('hf-bpt'), zone = $('hf-zone').value, pct = interpPct(zone, bpt) / 100;
+  var hspf = v('x-hspf'), el = v('x-el'), kwhU = v('x-kwh'), fp = v('x-fp'), eff = v('x-eff') / 100;
+  if (!(hspf > 0 && el > 0)) { out.innerHTML = '<p class="msg">Enter HSPF2 and an electricity price in the efficiency and cost calculator above.</p>'; return; }
+  var haveFuel = kwhU > 0 && fp > 0 && eff > 0;
+  var backupType = $('e-backup').value;
+  if (!haveFuel) { out.innerHTML = '<p class="msg">Enter the previous system\'s fuel energy content, price, and appliance efficiency in the efficiency and cost calculator above, to model it as the previous system' + (backupType === 'fuel' ? ' and as the new system\'s backup' : '') + '.</p>'; return; }
+
+  var copHP = hspf / 3.412;
+  var UA = Qd / (Ti - Td); /* W/K, from the design load and temperatures */
+  var annualKwh = UA * hdd * 24 / 1000; /* kWh of delivered heat, annual, degree-day estimate */
+  var hpKwh = annualKwh * pct, backupKwh = annualKwh * (1 - pct);
+  var fuelCoH = fp / (kwhU * eff); /* $ per kWh of heat delivered by the fuel system */
+
+  var newCost = hpKwh * (el / copHP) + backupKwh * (backupType === 'elec' ? el : fuelCoH);
+  var oldCost = annualKwh * fuelCoH;
+  var savings = oldCost - newCost, savingsPct = oldCost > 0 ? savings / oldCost * 100 : 0;
+
+  var html = '';
+  html += res('Estimated total annual heating energy needed', fmt(annualKwh, 0) + ' kWh', 'big');
+  html += res('Covered by the heat pump (' + fmt(pct * 100, 0) + '% of the season, ' + ZONENAME[zone] + ' zone)', fmt(hpKwh, 0) + ' kWh of heat &rarr; ' + fmt(hpKwh / copHP, 0) + ' kWh of electricity');
+  html += res('Covered by backup heat (' + fmt((1 - pct) * 100, 0) + '% of the season)', fmt(backupKwh, 0) + ' kWh of heat' + (backupType === 'elec' ? ' &rarr; ' + fmt(backupKwh, 0) + ' kWh of electricity' : ' from the previous fuel system'));
+  html += res('New system, estimated annual cost', '$' + fmt(newCost, 0), 'big', 'cold');
+  html += res('Previous system, estimated annual cost (100% fuel)', '$' + fmt(oldCost, 0));
+  html += res('Estimated annual savings', '$' + fmt(savings, 0) + ' (' + fmt(savingsPct, 0) + '%)', 'big', savings >= 0 ? 'cold' : 'heat');
+  html += '<p class="note">Degree-day estimate, heating only: annual heating energy = design load &divide; (indoor &minus; outdoor design temp) &times; degree-days &times; 24 h. Cooling energy and cost are not estimated. Approximate &mdash; not a substitute for hourly simulation (e.g. HOT2000) when finalizing a design.</p>';
   out.innerHTML = html;
 }
 
@@ -1350,9 +1434,9 @@ function calcAll() {
   calcQuick();
   calcLoad(); calcBal(); calcEff(); calcDuct1(); calcFR(); calcSizer();
   calcSHSC(); calcLift(); calcCharge(); calcNtc();
-  calcTarget(); calcTurndown(); calcHeatFrac();
+  calcTarget(); calcTurndown(); calcHeatFrac(); calcEnergy();
 }
-[].forEach.call(document.querySelectorAll('#calc-load input, #calc-load select'), function (el) {
+[].forEach.call(document.querySelectorAll('#calc-load input, #calc-load select:not(#L-city)'), function (el) {
   el.addEventListener('input', calcLoad); el.addEventListener('change', calcLoad);
 });
 on(['b-q', 'b-td', 'b-ti', 'b-t1', 'b-t2', 'b-t3', 'b-t4', 'b-c1', 'b-c2', 'b-c3', 'b-c4'], calcBal);
@@ -1367,6 +1451,8 @@ on(['t-r25', 't-b', 't-r', 't-tc'], calcNtc);
 on(['sel-opt', 'sel-dhl', 'sel-tdh', 'sel-dcl', 'sel-tdc'], calcTarget);
 on(['td-max', 'td-min'], calcTurndown);
 on(['hf-bpt', 'hf-zone'], calcHeatFrac);
+on(['e-hdd', 'e-backup'], calcEnergy);
+on(['L-city'], applyCity);
 on(['q-area', 'q-mode', 'q-coolf', 'q-heatf', 'q-cpk', 'q-aux', 'q-auxtype', 'q-auxpct', 'q-afue'], calcQuick);
 $('q-tight').addEventListener('change', function () {
   var p = QPRESET[$('q-tight').value];
@@ -1436,6 +1522,7 @@ var HELP = {
   'q-auxtype': 'Electric resistance (a simple heat strip) or a fossil-fuel furnace paired with the heat pump in a dual-fuel setup.',
   'q-auxpct': 'What share of the full design heating load the backup should cover on its own, from 0% (no redundancy) to 100% (fully redundant).',
   'q-afue': 'Furnace’s Annual Fuel Utilization Efficiency — the fraction of fuel energy delivered as useful heat. Used to size the furnace’s input rating from the output needed.',
+  'L-city': 'Auto-fills the design temperatures, wet-bulb, daily range, latitude, longitude, time zone, and degree-days below with approximate ASHRAE/NBC-style climate design data for that city or airport station. You can still edit any field afterward as a what-if; picking a city again overwrites them with that city’s data. Confirm against current ASHRAE/NBC data before finalizing a design.',
   'L-two': '99.6% (or 99%) winter design dry-bulb temperature from ASHRAE climatic data for the site — the outdoor temperature the heating system is sized to.',
   'L-twi': 'Winter indoor thermostat setpoint used for the heating load calculation.',
   'L-tso': '0.4% (or 1%) summer design dry-bulb temperature from ASHRAE climatic data — the outdoor temperature the cooling system is sized to.',
@@ -1523,7 +1610,9 @@ var HELP = {
   't-r25': 'Thermistor’s rated resistance at 25°C, from the manufacturer’s datasheet.',
   't-b': 'Thermistor’s Beta value (a curve-fit constant describing how resistance changes with temperature), from the manufacturer’s datasheet.',
   't-r': 'Measured resistance of the thermistor, to convert to a temperature reading.',
-  't-tc': 'A temperature to convert the other way, into the resistance you’d expect to measure at that temperature.'
+  't-tc': 'A temperature to convert the other way, into the resistance you’d expect to measure at that temperature.',
+  'e-hdd': 'Annual heating degree-days below 18°C for the site — the sum, over the year, of how far each day’s average temperature falls below 18°C, in °C·days. Picking a city in the load and ventilation calculator fills this in automatically; otherwise take it from Environment and Climate Change Canada climate data.',
+  'e-backup': 'What supplies heat in the new system below the balance point: a simple electric resistance element, or the previous fuel-fired system kept as a dual-fuel backup. The fuel’s price and efficiency come from the efficiency and cost calculator above.'
 };
 function mkHelpBtn(text, labelText) {
   var b = document.createElement('button');
