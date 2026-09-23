@@ -396,13 +396,51 @@ footer p { max-width: 80ch; }
   </div>
 </section>
 
+<!-- ===================== EQUIPMENT ===================== -->
+<section class="sec" id="equipment" data-nav="Equipment options">
+  <p class="eyebrow">Daikin &middot; Panasonic &middot; cold-climate ASHP reference</p>
+  <h2>Equipment options</h2>
+<div class="calc" id="calc-equipment">
+    <h3>Pick a model</h3>
+    <p class="hint">A short reference list of cold-climate Daikin and Panasonic models sold in Canada, ductless and ducted. Picking one fills in its capacity-vs-temperature points and HSPF2/SEER2 in the balance-point and efficiency calculators below &mdash; edit them freely afterward as a what-if; they re-sync only when you pick a model here again. Blank cells below mean the manufacturer didn&#39;t publish that point in the sources checked &mdash; confirm current capacity, efficiency, and availability against the manufacturer&#39;s submittal data before ordering equipment.</p>
+    <div class="grid">
+      <div class="field"><label for="eq-model">Model</label>
+        <select id="eq-model">
+          <option value="">&mdash; Manual / other model &mdash;</option>
+          <optgroup label="Daikin — ductless">
+            <option value="daikin-ductless-ftx18">Daikin Aurora RXL18WMVJU9 / FTX18WVJU9 (1.5 ton)</option>
+            <option value="daikin-ductless-ftxv24">Daikin RXT24AVJU9 / FTXV24AVJU9, Extreme Ambient (2 ton)</option>
+          </optgroup>
+          <optgroup label="Daikin — ducted, FDMQ concealed duct">
+            <option value="daikin-ducted-fdmq12">Daikin RXL12WMVJU9 / FDMQ12WVJU9 (1 ton)</option>
+            <option value="daikin-ducted-fdmq18">Daikin RXL18WMVJU9 / FDMQ18WVJU9 (1.5 ton)</option>
+          </optgroup>
+          <optgroup label="Panasonic — ductless, ClimaPure XE">
+            <option value="panasonic-ductless-xe12">Panasonic CU/CS-XE12WKUA (1 ton)</option>
+            <option value="panasonic-ductless-xe18">Panasonic CU/CS-XE18WKUA (1.5 ton)</option>
+          </optgroup>
+          <optgroup label="Panasonic — ducted, INTERIOS cold-climate central">
+            <option value="panasonic-ducted-he24">Panasonic CU-HE24YAHK6 (2 ton)</option>
+            <option value="panasonic-ducted-he36">Panasonic CU-HE36YAHK6 (3 ton)</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    <div class="results" id="eq-out" aria-live="polite"></div>
+
+    <h4 class="res-h">Full reference list</h4>
+    <div class="scroll"><table id="eq-table"></table></div>
+    <p class="note">Cold-climate air-source heat pump models sold in Canada, compiled from manufacturer specification guides and submittal sheets. This is a short illustrative shortlist, not a full lineup of either brand &mdash; ask your distributor about other capacities and series. Heating capacity figures are the manufacturer&#39;s rated (or, where noted, maximum) output at each outdoor temperature; efficiency ratings mix HSPF2/SEER2 and legacy HSPF/SEER depending on what the manufacturer publishes for that model.</p>
+  </div>
+</section>
+
 <!-- ===================== SIZING ===================== -->
 <section class="sec" id="sizing" data-nav="Equipment sizing">
   <p class="eyebrow">Balance point &middot; backup heat &middot; cost</p>
   <h2>Equipment sizing</h2>
 <div class="calc" id="calc-bal">
     <h3>Balance point and backup heat</h3>
-    <p class="hint">Enter the heat pump's maximum capacity at several outdoor temperatures from the manufacturer's performance table. The four capacity points below are illustrative, not a real model. The design load and temperatures auto-fill from the load and ventilation calculator above &mdash; edit them freely as a what-if; they re-sync only when that calculator's inputs change again.</p>
+    <p class="hint">Enter the heat pump's maximum capacity at several outdoor temperatures from the manufacturer's performance table. The four capacity points below are illustrative, not a real model &mdash; or pick a real Daikin or Panasonic model in the equipment options calculator above to fill them in. The design load and temperatures auto-fill from the load and ventilation calculator above &mdash; edit them freely as a what-if; they re-sync only when that calculator's inputs change again.</p>
     <div class="grid">
       <div class="field"><label for="b-q">Design heating load (<span class="u" data-q="pow"></span>)</label><input data-q="pow" data-c="7326.8" id="b-q" type="number" inputmode="decimal"></div>
       <div class="field"><label for="b-td">Design outdoor temp (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="-25" id="b-td" type="number" inputmode="decimal"></div>
@@ -1026,6 +1064,91 @@ function sendLoad() {
   calcBal(); calcTarget(); calcDuct1();
 }
 
+/* Cold-climate ASHP reference models: Daikin and Panasonic, ductless and
+   ducted, sold in Canada. pts are [outdoor temp °C, heating capacity W],
+   sparse where the manufacturer didn't publish that point. Compiled from
+   manufacturer specification guides/submittals; confirm against current
+   submittal data before ordering equipment. */
+var MODEL_DATA = {
+  'daikin-ductless-ftx18': {
+    brand: 'Daikin', type: 'Ductless', model: 'Aurora RXL18WMVJU9 / FTX18WVJU9 (1.5 ton)',
+    pts: [[8.3, 6331], [-15, 6331], [-25, 8206]],
+    hspf2: 8.5, seer2: 19.8,
+    link: 'https://www.myvrvdrive.com/static/ca48edef7cb9b97fe6c8ece86f526e6f/FTX18WVJU9RXL18WMVJU9.pdf'
+  },
+  'daikin-ductless-ftxv24': {
+    brand: 'Daikin', type: 'Ductless', model: 'RXT24AVJU9 / FTXV24AVJU9, Extreme Ambient (2 ton)',
+    pts: [[8.3, 7033], [-15, 7033]],
+    hspf2: 9.5, seer2: 21.0,
+    link: 'https://www.alpinehomeair.com/product/air-conditioning-cooling/ductless-mini-splits/single-zone-mini-split-systems/daikin/ftxv24avju9-rxt24avju9'
+  },
+  'daikin-ducted-fdmq12': {
+    brand: 'Daikin', type: 'Ducted (FDMQ)', model: 'RXL12WMVJU9 / FDMQ12WVJU9 (1 ton)',
+    pts: [[8.3, 3986], [-8.3, 2491], [-15, 1782]],
+    hspf2: 8.9, seer2: 14.6,
+    link: 'https://daikincomfort.com/docs/default-source/daikin-aurora-fdmq-ducted-concealed/cb-aurszdc-06-23.pdf'
+  },
+  'daikin-ducted-fdmq18': {
+    brand: 'Daikin', type: 'Ducted (FDMQ)', model: 'RXL18WMVJU9 / FDMQ18WVJU9 (1.5 ton)',
+    pts: [[8.3, 6331], [-8.3, 3986], [-15, 2828]],
+    hspf2: 8.5, seer2: 15.2,
+    link: 'https://daikincomfort.com/docs/default-source/daikin-aurora-fdmq-ducted-concealed/cb-aurszdc-06-23.pdf'
+  },
+  'panasonic-ductless-xe12': {
+    brand: 'Panasonic', type: 'Ductless', model: 'CU/CS-XE12WKUA (1 ton)',
+    pts: [[8.3, 3517], [-8.3, 2931], [-15, 3517]],
+    hspf2: 8.7, seer2: 24.6,
+    link: 'https://iaq.na.panasonic.com/hubfs/PCI%20IAQ%20-%20North%20America%20US/Resources/XE12WKUA%20Specification%20Guide%20(PDF).pdf'
+  },
+  'panasonic-ductless-xe18': {
+    brand: 'Panasonic', type: 'Ductless', model: 'CU/CS-XE18WKUA (1.5 ton)',
+    pts: [[8.3, 5980], [-8.3, 4104], [-15, 5980]],
+    hspf2: 12.0, seer2: 21.0,
+    link: 'https://43645300.fs1.hubspotusercontent-na1.net/hubfs/43645300/PCI%20IAQ%20-%20North%20America%20US/Resources/XE18WKUA%20Specification%20Guide%20(PDF).pdf'
+  },
+  'panasonic-ducted-he24': {
+    brand: 'Panasonic', type: 'Ducted (INTERIOS)', model: 'CU-HE24YAHK6 (2 ton)',
+    pts: [[-8.3, 5626], [-15, 6624]],
+    hspf2: 8.0, seer2: 17.4,
+    link: 'https://iaq.na.panasonic.com/hubfs/PCI%20-%20Panasonic%20North%20America%20Canada/IAQ/INTERIOS%E2%84%A2%204%20Ton%20Cold%20Climate%20Central%20Heat%20Pump/HE24YAHK6_Central_Heat_Pump_System_Submittal_en.pdf'
+  },
+  'panasonic-ducted-he36': {
+    brand: 'Panasonic', type: 'Ducted (INTERIOS)', model: 'CU-HE36YAHK6 (3 ton)',
+    pts: [[-8.3, 8940], [-15, 10078]],
+    hspf2: 7.8, seer2: 16.0,
+    link: 'https://iaq.na.panasonic.com/hubfs/PCI%20-%20Panasonic%20North%20America%20Canada/IAQ/INTERIOS%E2%84%A2%204%20Ton%20Cold%20Climate%20Central%20Heat%20Pump/Panasonic_Submittal_HE36YAHK6_April_15_2024_EN.pdf'
+  }
+};
+function applyModel() {
+  var key = $('eq-model').value, d = MODEL_DATA[key], out = $('eq-out');
+  if (!d) { out.innerHTML = ''; return; }
+  var pts = d.pts.slice().sort(function (a, b) { return b[0] - a[0]; }); /* warmest first, matches Point 1..4 */
+  for (var i = 1; i <= 4; i++) {
+    if (pts[i - 1]) { setC('b-t' + i, pts[i - 1][0]); setC('b-c' + i, pts[i - 1][1]); }
+    else { $('b-t' + i).value = ''; $('b-t' + i).setAttribute('data-c', ''); $('b-c' + i).value = ''; $('b-c' + i).setAttribute('data-c', ''); }
+  }
+  $('x-hspf').value = d.hspf2; $('x-seer').value = d.seer2;
+  var html = res(d.brand + ' — ' + d.type, d.model, 'big', 'cold');
+  html += '<p class="note">Capacity points and HSPF2/SEER2 sent to the balance-point and efficiency calculators below. <a href="' + d.link + '" target="_blank" rel="noopener">Manufacturer specification sheet</a>.</p>';
+  out.innerHTML = html;
+  calcBal(); calcEff();
+}
+function renderEquipmentTable() {
+  var t = $('eq-table');
+  if (!t) return;
+  var capAtPt = function (pts, tC) {
+    for (var i = 0; i < pts.length; i++) { if (Math.abs(pts[i][0] - tC) < 0.6) return P(pts[i][1]); }
+    return '—';
+  };
+  var h = '<thead><tr>' + th('Brand') + th('Type') + th('Model') + th('Capacity at 8°C (47°F)', 'n') + th('at −8°C (17°F)', 'n') + th('at −15°C (5°F)', 'n') + th('HSPF2', 'n') + th('SEER2', 'n') + th('Spec sheet') + '</tr></thead><tbody>';
+  Object.keys(MODEL_DATA).forEach(function (key) {
+    var d = MODEL_DATA[key];
+    h += '<tr>' + td(d.brand) + td(d.type) + td(d.model) + td(capAtPt(d.pts, 8.3), 'n mono') + td(capAtPt(d.pts, -8.3), 'n mono') + td(capAtPt(d.pts, -15), 'n mono') + td(fmt(d.hspf2, 1), 'n mono') + td(fmt(d.seer2, 1), 'n mono') + td('<a href="' + d.link + '" target="_blank" rel="noopener">link</a>') + '</tr>';
+  });
+  h += '</tbody>';
+  t.innerHTML = h;
+}
+
 /* =====================================================================
    Equipment sizing: balance point
    ===================================================================== */
@@ -1435,6 +1558,7 @@ function calcAll() {
   calcLoad(); calcBal(); calcEff(); calcDuct1(); calcFR(); calcSizer();
   calcSHSC(); calcLift(); calcCharge(); calcNtc();
   calcTarget(); calcTurndown(); calcHeatFrac(); calcEnergy();
+  renderEquipmentTable();
 }
 [].forEach.call(document.querySelectorAll('#calc-load input, #calc-load select:not(#L-city)'), function (el) {
   el.addEventListener('input', calcLoad); el.addEventListener('change', calcLoad);
@@ -1453,6 +1577,7 @@ on(['td-max', 'td-min'], calcTurndown);
 on(['hf-bpt', 'hf-zone'], calcHeatFrac);
 on(['e-hdd', 'e-backup'], calcEnergy);
 on(['L-city'], applyCity);
+$('eq-model').addEventListener('change', applyModel);
 on(['q-area', 'q-mode', 'q-coolf', 'q-heatf', 'q-cpk', 'q-aux', 'q-auxtype', 'q-auxpct', 'q-afue'], calcQuick);
 $('q-tight').addEventListener('change', function () {
   var p = QPRESET[$('q-tight').value];
@@ -1612,7 +1737,8 @@ var HELP = {
   't-r': 'Measured resistance of the thermistor, to convert to a temperature reading.',
   't-tc': 'A temperature to convert the other way, into the resistance you’d expect to measure at that temperature.',
   'e-hdd': 'Annual heating degree-days below 18°C for the site — the sum, over the year, of how far each day’s average temperature falls below 18°C, in °C·days. Picking a city in the load and ventilation calculator fills this in automatically; otherwise take it from Environment and Climate Change Canada climate data.',
-  'e-backup': 'What supplies heat in the new system below the balance point: a simple electric resistance element, or the previous fuel-fired system kept as a dual-fuel backup. The fuel’s price and efficiency come from the efficiency and cost calculator above.'
+  'e-backup': 'What supplies heat in the new system below the balance point: a simple electric resistance element, or the previous fuel-fired system kept as a dual-fuel backup. The fuel’s price and efficiency come from the efficiency and cost calculator above.',
+  'eq-model': 'Fills in this model’s heating-capacity-vs-temperature points and HSPF2/SEER2 in the balance-point and efficiency calculators below. You can still edit any field afterward as a what-if; picking a model again overwrites them with that model’s data. Confirm against the manufacturer’s current submittal data before ordering equipment.'
 };
 function mkHelpBtn(text, labelText) {
   var b = document.createElement('button');
