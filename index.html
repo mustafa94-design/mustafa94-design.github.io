@@ -119,6 +119,26 @@ td.n, th.n { text-align: right; }
 #L-htbl th, #L-htbl td, #L-ctbl th, #L-ctbl td { padding-left: 8px; padding-right: 8px; }
 #L-htbl td.n, #L-ctbl td.n { white-space: nowrap; }
 #L-htbl td:first-child, #L-ctbl td:first-child { min-width: 120px; }
+#ft-table { min-width: 880px; }
+#ft-table td:nth-child(1) { white-space: nowrap; }
+#ft-table td:nth-child(3) { min-width: 180px; }
+#ft-table td:nth-child(4), #ft-table td:nth-child(5) { min-width: 220px; }
+#ft-diag { min-width: 640px; }
+@media (max-width: 640px) {
+  #ft-table { min-width: 0; }
+  #ft-table thead { display: none; }
+  #ft-table, #ft-table tbody, #ft-table tr, #ft-table td { display: block; width: 100%; }
+  #ft-table tr { border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; margin-bottom: 10px; }
+  #ft-table td { border-bottom: 0; padding: 4px 10px; min-width: 0 !important; }
+  #ft-table td[data-l]::before { content: attr(data-l); display: block; font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  #ft-table td:nth-child(1), #ft-table td:nth-child(2) { display: inline-block; width: auto; }
+  #ft-diag { min-width: 0; }
+  #ft-diag thead { display: none; }
+  #ft-diag, #ft-diag tbody, #ft-diag tr, #ft-diag td { display: block; width: 100%; }
+  #ft-diag tr { border-bottom: 1px solid var(--line); padding: 6px 0; }
+  #ft-diag td { border-bottom: 0; padding: 3px 4px; min-width: 0 !important; }
+}
+#ft-diag td:first-child { min-width: 170px; font-weight: 500; }
 .arrow-up { color: var(--heat); font-weight: 600; }
 .arrow-dn { color: var(--cold); font-weight: 600; }
 figure { margin: 8px 0 18px; }
@@ -589,6 +609,41 @@ footer p { max-width: 80ch; }
       <div class="field"><label for="t-tc">Or a temperature (<span class="u" data-q="temp"></span>)</label><input data-q="temp" data-c="0" id="t-tc" type="number" inputmode="decimal"></div>
     </div>
     <div class="results" id="t-out" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ===================== TROUBLESHOOTING ===================== -->
+<section class="sec" id="troubleshoot" data-nav="Troubleshooting">
+  <p class="eyebrow">Daikin &middot; Panasonic &middot; fault codes</p>
+  <h2>Troubleshooting</h2>
+<div class="calc" id="calc-faults">
+    <h3>Fault-code schedule</h3>
+    <p class="hint">Fault codes, likely causes, and what to check, for Daikin and Panasonic split heat pumps. Filter by brand or category, or type a code (for example <strong>E5</strong> or <strong>H11</strong>) or a word (for example <strong>fan</strong>) into the search box.</p>
+    <div class="grid">
+      <div class="field"><label for="ft-brand">Brand</label>
+        <select id="ft-brand"><option value="">Both</option><option value="Daikin">Daikin</option><option value="Panasonic">Panasonic</option></select>
+      </div>
+      <div class="field"><label for="ft-cat">Category</label>
+        <select id="ft-cat"><option value="">All</option></select>
+      </div>
+      <div class="field"><label for="ft-q">Search code or word</label><input id="ft-q" type="search" autocomplete="off" placeholder="e.g. U4, fan, thermistor"></div>
+    </div>
+    <div class="results" id="ft-count" aria-live="polite"></div>
+    <div class="scroll"><table id="ft-table" class="ft"></table></div>
+    <p class="note">Sources: Daikin K-series, FTX-N, FTXA and RMXS-L service manuals and the SM-TS3 self-diagnosis chart; Panasonic CS-XE9WKUAW, CS(CU)-S18/S24JKQ, CS-XE9EKE, CS-HE9JKE and CS-E9RKUAW service manuals and the XE12WKUA operation manual. Rows marked <em>Verify</em> had conflicting or incomplete sources. Resistance, voltage and pressure thresholds are model-specific, so use the exact model&#39;s service manual for numbers.</p>
+
+    <h4 class="res-h">Reading the code on the unit</h4>
+    <div class="scroll"><table id="ft-diag" class="ft"></table></div>
+
+    <h4 class="res-h">LED and display indications</h4>
+    <div class="warn"><span class="tag">Good to know</span>
+      <p><strong>Daikin.</strong> The indoor green operation lamp blinks on a protection-device, thermistor or U4 fault, but the blinks do not encode the code. Use the remote or wired controller to read it. On the PCBs, the green LED blinks when the microcontroller is normal (indoor and outdoor). Multi-split RMXS outdoor units also have a service PCB with orange LEDs H1P&ndash;H7P: press BS1 (MODE) for monitor mode, BS2 (SET) to pick the item, BS3 (RETURN) to read the digits. Check the unit&#39;s own label for the LED pattern table.</p>
+      <p><strong>Panasonic.</strong> A blinking Timer LED on the indoor unit means a fault stopped the unit, and the blink count carries no code, so read it with the CHECK procedure. A blinking Power LED during heating can be normal defrost. A blinking Patrol LED means H58 (gas sensor), and a blinking e-ion LED means H25. No outdoor-PCB LED code table was found for the XE series; the only outdoor tool referenced is a 6-LED inverter checker used for F93.</p>
+      <p><strong>Panasonic INTERIOS (ducted).</strong> No public code table or self-diagnosis sequence was found. The control&#39;s LED flashes quickly when something is wrong, &ldquo;EL0C&rdquo; on the display means a refrigerant-leak event on some models, and the air handler has an &ldquo;L&rdquo; terminal that sends a fault signal to the thermostat. Do not assume the H/F codes above apply; get the INTERIOS service manual from your distributor.</p>
+    </div>
+
+    <h4 class="res-h">After the repair</h4>
+    <p class="note">Most codes clear after a power reset at the breaker or outdoor unit, and some clear on their own after about 10 to 60 minutes of normal running. Clear the stored history so the next call doesn&#39;t chase an old code: Daikin ARC remote, hold ON/OFF on a BRC1C controller for 4 s or more. Panasonic, see the clearing steps in the table above. Daikin C4, C5 and C9 and Panasonic F90 and H98 are worded differently in different manuals, so confirm against the model you are standing in front of. Panasonic codes H17, H32, H34, H36, H37 and F17 exist on the XE series but were not verified here.</p>
   </div>
 </section>
 
@@ -1552,6 +1607,115 @@ function calcQuick() {
   out.innerHTML = html;
 }
 
+/* =====================================================================
+   Troubleshooting: Daikin and Panasonic fault codes
+   ===================================================================== */
+var FAULTS = [
+  /* [brand, code, category, meaning, causes, fix, verify] */
+  ['Daikin','A1','Indoor unit','Indoor PCB abnormality','Wrong indoor/outdoor pairing, loose connector, supply voltage drop, bad PCB','Check pairing against the databook, reseat PCB connectors, check supply voltage, replace indoor PCB',0],
+  ['Daikin','A3','Indoor unit','Drain level abnormality (units with a drain pump)','Clogged drain, poor drain slope, drain pump or float switch fault','Clear the drain, check slope, test the float switch and pump',1],
+  ['Daikin','A5','Indoor unit','Freeze-up protection (cooling) or heating peak-cut','Cooling: coil below 0 °C. Heating: coil above about 65 °C. Blocked airflow, dirty filter or coil, bad coil thermistor, low charge','Clean filter and coil, clear airflow, test coil thermistor, check charge and PCB',0],
+  ['Daikin','A6','Indoor unit','Indoor fan motor (DC) abnormality','Hall-IC speed not detected at full drive: motor, connector or PCB','Spin the fan by hand, check the connector, measure the motor, replace motor or PCB',0],
+  ['Daikin','A8','Indoor unit','Power supply or fan PCB abnormality','Supply or wiring fault; sources disagree on the exact meaning','Check supply voltage and wiring',1],
+  ['Daikin','AJ','Indoor unit','Capacity-setting error','Replacement PCB without the capacity adaptor (wider range chart; not verified for mini-splits)','Install the correct capacity adaptor after PCB replacement',1],
+  ['Daikin','C4','Sensor','Indoor heat-exchanger (liquid) thermistor','Input above 4.96 V or below 0.04 V while the compressor runs: open or short, connector, PCB','Check the connector, measure thermistor resistance, replace thermistor, then PCB',1],
+  ['Daikin','C5','Sensor','Gas-pipe thermistor (or room thermistor on FTX-N)','Open or short, connector. Sources disagree on which thermistor','Same procedure as C4',1],
+  ['Daikin','C9','Sensor','Room (suction air) thermistor (remote-controller thermistor on FTX-N)','Open or short, connector','Same procedure as C4',1],
+  ['Daikin','H9','Sensor','Outdoor air thermistor','Input out of range','Check the thermistor, then main PCB',0],
+  ['Daikin','J3','Sensor','Discharge pipe thermistor','Input out of range or sensor dislodged','Check thermistor seating and value, then PCB',0],
+  ['Daikin','J6','Sensor','Outdoor heat-exchanger thermistor','Input out of range','Check the thermistor, then PCB',0],
+  ['Daikin','P4','Sensor','Radiation-fin thermistor','Input out of range','Check the inverter PCB, then main PCB',0],
+  ['Daikin','E1','Outdoor protection','Outdoor PCB abnormality','EEPROM error or PCB hardware fault','Check supply, replace the outdoor PCB',0],
+  ['Daikin','E3 / H3','Outdoor protection','High-pressure switch actuated / switch fault','Dirty coil, overcharge, closed valve, faulty switch (E3 is range-wide, not in K-series list)','Check switch continuity, clean the coil, check the circuit',1],
+  ['Daikin','E5','Outdoor protection','Compressor overload (OL)','Discharge thermistor, fan, EEV, 4-way valve, inverter PCB, closed stop valve, charge','Check the refrigerant circuit and stop valves, then compressor, then inverter PCB',0],
+  ['Daikin','E6','Outdoor protection','Compressor lock','Rotor does not turn on start','Check compressor windings, inverter PCB, stop valve, supply',0],
+  ['Daikin','E7','Outdoor protection','Outdoor DC fan lock','Fan does not start within 15 to 30 s','Spin the fan, check the motor and connector, inverter PCB',0],
+  ['Daikin','E8','Outdoor protection','Input overcurrent','Running current over limit for 2.5 s: compressor, power module, ambient out of range','Check compressor, inverter PCB and supply',0],
+  ['Daikin','EA','Outdoor protection','4-way valve / cool-heat switching','Valve, gas charge, thermistor','Check the valve coil, circuit and thermistors',0],
+  ['Daikin','H0','Outdoor protection','Compressor sensor system','DC voltage out of range before start (wording unsure)','Check inverter and main PCB, supply',1],
+  ['Daikin','H6','Outdoor protection','Compressor position sensor','No start within 15 s','Check compressor, PCB, charge, supply',0],
+  ['Daikin','H8','Outdoor protection','Input current / DC sensor','Only listed on 35/42 class','Check PCBs, compressor, reactor',1],
+  ['Daikin','L3','Outdoor protection','Electrical box temperature rise','Inverter PCB, fan, dirty coil, supply','Clean the coil, check the fan, PCB',0],
+  ['Daikin','L4','Outdoor protection','Radiation fin temperature rise','Fin thermistor reads high','Check the outdoor fan and fin airflow',0],
+  ['Daikin','L5','Outdoor protection','Output overcurrent','Inverter DC current high: compressor, closed valve, power module','Check compressor, PCB, circuit',0],
+  ['Daikin','F3','Refrigerant','Discharge pipe temperature too high','Low charge, closed stop valve, clogged circuit, bad thermistor','Check pressures and valves, test the thermistor',0],
+  ['Daikin','F6','Refrigerant','High pressure in cooling','Outdoor coil above 60 to 65 °C: dirty coil, fan, overcharge, air in the circuit','Clean the coil, check the fan, charge, EEV',0],
+  ['Daikin','F8','Refrigerant','Compressor internal temperature shutdown','Listed on some platforms, not the K-series','Check the circuit, then the discharge thermistor',1],
+  ['Daikin','U0','Refrigerant','Refrigerant shortage','Undercharge, clog, bad thermistor, EEV','Leak check, thermistors, EEV, then recharge',0],
+  ['Daikin','U2','Power and communication','Low or over-voltage, or momentary power loss','Supply imbalance over 10%, voltage drop, short circuit','Measure supply, check compressor, fan and PCBs',0],
+  ['Daikin','U4','Power and communication','Indoor-outdoor transmission error','Voltage drop, wiring error or break (wire 3), bad PCB, short in a fan winding','Check supply, interconnect wiring, fan motor, replace PCB',0],
+  ['Daikin','U5','Power and communication','Indoor to remote controller communication','Wiring, mismatched controller','Check pairing and wiring',0],
+  ['Daikin','UA','Power and communication','Improper indoor/outdoor combination','Wrong pairing','Verify the combination table',0],
+  ['Panasonic','H11','Communication','Indoor/outdoor communication abnormal (more than 1 min after start-up)','Wiring, broken wire 3, indoor or outdoor PCB, disturbed supply','Check interconnect wiring. Disconnect terminal 3 and measure Vdc across 2 and 3 from the outdoor unit: a fluctuating 20 to 70 Vdc points to the outdoor PCB, 20 to 50 Vdc (reconnected) to the indoor PCB (JKQ values, may differ on XE)',0],
+  ['Panasonic','H12','Communication','Indoor/outdoor capacity rank mismatch (judged 90 s after power-on)','Wrong model pairing, wrong PCB fitted, wiring','Compare model and spare-part numbers with the parts list, replace the mismatched PCB',0],
+  ['Panasonic','H33','Communication','Indoor/outdoor wrong connection','Supply wiring or voltage connection error','Check the supply-voltage connections between units',0],
+  ['Panasonic','H38','Communication','Brand-code mismatch','Wrong indoor/outdoor pairing','Check the pairing (no procedure found)',1],
+  ['Panasonic','H14','Sensor','Indoor intake air sensor (5 s continuous)','Connector, sensor, PCB','Check the connector, unplug and measure resistance against the manual chart (about 70 kΩ at −10 °C, about 1 kΩ at 50 °C). Off-chart: replace the sensor, otherwise the indoor PCB',0],
+  ['Panasonic','H15','Sensor','Outdoor compressor sensor','Connector, sensor, PCB','Same method (about 70 kΩ at 20 °C to about 0.5 kΩ at 140 °C). Replace the sensor, then the outdoor PCB',0],
+  ['Panasonic','H23','Sensor','Indoor heat-exchanger (pipe) sensor (H24 is a second indoor sensor)','Connector, sensor, PCB','Same method. Replace the sensor, then the PCB',0],
+  ['Panasonic','H27','Sensor','Outdoor air sensor','Connector, sensor, PCB','Same method. Replace the sensor, then the outdoor PCB',0],
+  ['Panasonic','H28','Sensor','Outdoor heat-exchanger sensor','Connector, sensor, PCB','Same method. Replace the sensor, then the outdoor PCB',0],
+  ['Panasonic','H30','Sensor','Outdoor discharge-pipe sensor','Connector, sensor, PCB','Power off, check the connector, unplug from the outdoor PCB and measure resistance against the chart. Off-chart: replace the sensor, otherwise the outdoor PCB',0],
+  ['Panasonic','H58','Sensor','Gas sensor abnormality (Patrol LED blinks; Patrol models only)','Gas sensor or its connection','Check the gas sensor and connection',1],
+  ['Panasonic','H98','Refrigerant and cycle','Indoor high-pressure protection in heating (one source: indoor temperature rise abnormal)','Dirty filter or coil, short-circuited airflow, refrigerant','Clean the filter and coil, clear airflow, then check the charge',1],
+  ['Panasonic','H99','Refrigerant and cycle','Indoor heat-exchanger freeze (anti-freeze) protection','Dirty filter or coil, low airflow, low refrigerant','Clean the filter and coil, then check charge and airflow',0],
+  ['Panasonic','F11','Refrigerant and cycle','Reversing (4-way) valve switching failure (4 in 30 min)','4-way valve or its coil','Check coil continuity and drive, then valve operation. Replace the valve or coil',0],
+  ['Panasonic','F91','Refrigerant and cycle','Refrigeration cycle abnormal (2 in 20 min)','Low or no charge, closed service valve, restriction','Confirm service valves are open, leak-check, repair and recharge',0],
+  ['Panasonic','F95','Refrigerant and cycle','Cooling high-pressure protection (4 in 20 min)','Blocked outdoor coil or fan, outdoor refrigerant circuit','Clean the outdoor coil, check outdoor fan airflow and charge',0],
+  ['Panasonic','F97','Refrigerant and cycle','Compressor overheating protection','Excess refrigerant, poor heat rejection, IPM','Check for overcharge, outdoor airflow and the IPM',0],
+  ['Panasonic','F98','Refrigerant and cycle','Total running current protection (4 in 20 min)','Low refrigerant, poor heat rejection; also outdoor PCB, IPM, compressor','Check the charge and outdoor coil airflow, compare running amps to spec',0],
+  ['Panasonic','H19','Fan, compressor and power','Indoor fan motor locked (7 times in a row)','Motor winding or Hall IC, PCB','Turn the fan by hand: rough, replace the motor. Smooth: disconnect the motor and power up; if the PCB then drives it, the motor is bad. Then check feedback 15 Vdc, supply about 325 Vdc, control 15 Vdc, command 1 to 5 Vdc (JKQ pin values)',0],
+  ['Panasonic','H97','Fan, compressor and power','Outdoor fan motor lock (2 in 30 min)','Fan motor or lead wire','Check for a mechanical jam, then motor, harness and outdoor PCB',0],
+  ['Panasonic','H16','Fan, compressor and power','Outdoor current transformer open circuit','CT, outdoor PCB, low-compression compressor','Force heating and measure running current and suction pressure. Under 0.65 A with about 120 psi suction (JKQ values): replace the compressor, otherwise the outdoor PCB',0],
+  ['Panasonic','F90','Fan, compressor and power','PFC (power factor correction) control, 4 in 20 min (one source: compressor micro-communication)','Outdoor PCB','Check supply voltage and the PFC section, replace the outdoor PCB',1],
+  ['Panasonic','F93','Fan, compressor and power','Compressor rotation failure','Disconnected compressor terminal, outdoor PCB or IPM, compressor','Power off, check the U/V/W connectors, connect U/V/W to an inverter checker: inconsistent blinking of its 6 LEDs means replace the outdoor PCB; a pass with the fault persisting means replace the compressor',0],
+  ['Panasonic','F96','Fan, compressor and power','IPM (power transistor) overheating','Poor heat rejection, IPM','Check outdoor airflow and the IPM heat sink',0],
+  ['Panasonic','F99','Fan, compressor and power','Outdoor DC peak detection','Compressor, power transistor, PCB, short circuit','Reset and restart, listen to the start-up and check vibration. Recover the charge to rule out overcharge. With power off, measure U-V, V-W, W-U: shorted or locked means replace the compressor; normal windings means replace the outdoor PCB',0]
+];
+var DIAG_ROWS = [
+  ['Daikin wireless remote (ARC)','Hold TIMER CANCEL for 5 s toward the indoor unit until "00" shows. Press TIMER CANCEL repeatedly to step through the codes. One short beep: left digit does not match. Two short beeps: left digit matches. One long beep: both match, and that is the code. Exit by holding TIMER CANCEL 5 s, or wait 60 s.'],
+  ['Daikin wired BRC1E','On a fault the screen blinks "Error: Press Menu". Press Menu/Enter to show the code, then Menu/Enter again for malfunction history.'],
+  ['Daikin wired BRC1C','Press INSPECTION/TEST, step Unit No. with UP/DOWN until the buzzer sounds. Press MODE and set the upper digit, MODE again for the lower digit, until the continuous beep. Hold ON/OFF 4 s or more to clear history.'],
+  ['Panasonic wireless remote (read)','Hold CHECK with a pointed object for 5 s: the display shows "– –". Press TIMER ▲/▼ to step through codes from H00. A continuous 4 s beep with the Power LED lit for 30 s means the code matches the stored fault. Hold CHECK 5 s again, or wait 30 s, to exit.'],
+  ['Panasonic clear history','Power on in standby. Hold the unit&#39;s AUTO button for 5 s: a beep, then forced cooling. Press CHECK on the remote for about 1 s: a beep confirms the memory is cleared.'],
+  ['Panasonic emergency run','After sensor faults such as H14, H23, H27, H28 the unit can be restarted from the remote or the Auto OFF/ON button; the receive beep changes from one beep to four.']
+];
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function renderFaults() {
+  var t = $('ft-table');
+  if (!t) return;
+  var cat = $('ft-cat');
+  if (cat.options.length < 2) {
+    var seen = {};
+    FAULTS.forEach(function (f) {
+      if (!seen[f[2]]) { seen[f[2]] = 1; var o = document.createElement('option'); o.value = f[2]; o.textContent = f[2]; cat.appendChild(o); }
+    });
+  }
+  var b = $('ft-brand').value, c = cat.value, q = $('ft-q').value.trim().toLowerCase();
+  var rows = FAULTS.filter(function (f) {
+    if (b && f[0] !== b) return false;
+    if (c && f[2] !== c) return false;
+    if (q && (f[1] + ' ' + f[3] + ' ' + f[4] + ' ' + f[5]).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+  var h = '<thead><tr>' + th('Brand') + th('Code') + th('What it means') + th('Likely causes') + th('What to check / fix') + '</tr></thead><tbody>';
+  rows.forEach(function (f) {
+    var code = '<strong class="mono">' + esc(f[1]) + '</strong>' + (f[6] ? '<br><em class="hint">Verify</em>' : '');
+    var cell = function (lab, html) { return '<td data-l="' + lab + '">' + html + '</td>'; };
+    h += '<tr>' + cell('Brand', esc(f[0])) + cell('Code', code) + cell('Means', esc(f[3])) + cell('Likely causes', esc(f[4])) + cell('Check / fix', esc(f[5])) + '</tr>';
+  });
+  if (!rows.length) h += '<tr><td colspan="5">No codes match. Clear the search or the filters.</td></tr>';
+  h += '</tbody>';
+  t.innerHTML = h;
+  $('ft-count').innerHTML = '<p class="note">' + rows.length + ' of ' + FAULTS.length + ' codes shown.</p>';
+  var d = $('ft-diag');
+  if (d && !d.innerHTML) {
+    var dh = '<thead><tr>' + th('Controller / task') + th('Steps') + '</tr></thead><tbody>';
+    DIAG_ROWS.forEach(function (r) { dh += '<tr>' + td(r[0]) + td(r[1]) + '</tr>'; });
+    d.innerHTML = dh + '</tbody>';
+  }
+}
+
 /* ---------- wiring ---------- */
 function calcAll() {
   calcQuick();
@@ -1559,6 +1723,7 @@ function calcAll() {
   calcSHSC(); calcLift(); calcCharge(); calcNtc();
   calcTarget(); calcTurndown(); calcHeatFrac(); calcEnergy();
   renderEquipmentTable();
+  renderFaults();
 }
 [].forEach.call(document.querySelectorAll('#calc-load input, #calc-load select:not(#L-city)'), function (el) {
   el.addEventListener('input', calcLoad); el.addEventListener('change', calcLoad);
@@ -1578,6 +1743,8 @@ on(['hf-bpt', 'hf-zone'], calcHeatFrac);
 on(['e-hdd', 'e-backup'], calcEnergy);
 on(['L-city'], applyCity);
 $('eq-model').addEventListener('change', applyModel);
+['ft-brand', 'ft-cat'].forEach(function (id) { $(id).addEventListener('change', renderFaults); });
+$('ft-q').addEventListener('input', renderFaults);
 on(['q-area', 'q-mode', 'q-coolf', 'q-heatf', 'q-cpk', 'q-aux', 'q-auxtype', 'q-auxpct', 'q-afue'], calcQuick);
 $('q-tight').addEventListener('change', function () {
   var p = QPRESET[$('q-tight').value];
